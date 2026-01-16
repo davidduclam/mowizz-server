@@ -2,7 +2,6 @@ package com.github.davidduclam.movietracker.client.tmdb;
 
 import com.github.davidduclam.movietracker.dto.TmdbMovieDTO;
 import com.github.davidduclam.movietracker.dto.TmdbSearchResponseDTO;
-import com.github.davidduclam.movietracker.model.Movie;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Service;
@@ -43,12 +42,24 @@ public class TmdbClient {
     /**
      * Fetch the details of a specific movie
      * @param tmdbId the ID of the movie from TMDB
-     * @return the movie details
+     * @return the movie details from the specified mpvie
      */
     public TmdbMovieDTO fetchMovieDetails(Long tmdbId) {
         return restClient.get()
                 .uri("/movie/{movie_id}", tmdbId)
                 .retrieve()
                 .body(TmdbMovieDTO.class);
+    }
+
+    /**
+     * Fetch the most popular movies currently
+     * @return the list of popular movies
+     */
+    public List<TmdbMovieDTO> popularMovies() {
+        TmdbSearchResponseDTO response = restClient.get()
+                .uri("/movie/popular")
+                .retrieve()
+                .body(TmdbSearchResponseDTO.class);
+        return response != null ? response.getResults() : List.of();
     }
 }

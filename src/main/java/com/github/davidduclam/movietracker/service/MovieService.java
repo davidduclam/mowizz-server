@@ -6,6 +6,7 @@ import com.github.davidduclam.movietracker.model.Movie;
 import com.github.davidduclam.movietracker.repository.MovieRepository;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Optional;
 
@@ -17,19 +18,6 @@ public class MovieService {
     public MovieService(MovieRepository movieRepository, TmdbClient tmdbClient) {
         this.movieRepository = movieRepository;
         this.tmdbClient = tmdbClient;
-    }
-
-    /**
-     * Save a movie to the database
-     * @param movie the object to be saved
-     * @return the saved movie
-     */
-    public Movie saveMovie(Movie movie) {
-        return movieRepository.save(movie);
-    }
-
-    public Optional<Movie> findByTmdbId(Long tmdbId) {
-        return movieRepository.findByTmdbId(tmdbId);
     }
 
     /**
@@ -61,6 +49,41 @@ public class MovieService {
         } else {
             return m.orElseThrow(() -> new NoSuchElementException("Movie not found in DB"));
         }
+    }
+
+    /**
+     * Uses TmdbClient to search for a movie
+     * @param query the keyword
+     * @return the list of movies
+     */
+    public List<TmdbMovieDTO> searchMovie(String query) {
+        return tmdbClient.searchMovies(query);
+    }
+
+    /**
+     * Uses TmdbClient to fetch the most popular movies
+     * @return the list of popular movies
+     */
+    public List<TmdbMovieDTO> popularMovies() {
+        return tmdbClient.popularMovies();
+    }
+
+    /**
+     * Save a movie to the database
+     * @param movie the object to be saved
+     * @return the saved movie
+     */
+    public Movie saveMovie(Movie movie) {
+        return movieRepository.save(movie);
+    }
+
+    /**
+     * Searches for a movie in the database
+     * @param tmdbId the id to be searched for
+     * @return the movie if found
+     */
+    public Optional<Movie> findByTmdbId(Long tmdbId) {
+        return movieRepository.findByTmdbId(tmdbId);
     }
 
 }
