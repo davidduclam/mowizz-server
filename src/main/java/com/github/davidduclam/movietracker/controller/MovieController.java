@@ -31,4 +31,13 @@ public class MovieController {
         return movieService.popularMovies();
     }
 
+    @GetMapping("/top-rated")
+    public List<TmdbMovieDTO> topRatedMovies() {
+        return movieService.topRatedMovies();
+    }
+
+    @GetMapping("/upcoming")
+    public List<TmdbMovieDTO> upcomingMovies() {
+        return movieService.upcomingMovies();
+    }
 }

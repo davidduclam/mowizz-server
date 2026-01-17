@@ -52,12 +52,36 @@ public class TmdbClient {
     }
 
     /**
-     * Fetch the most popular movies currently
+     * Get a list of movies ordered by popularity
      * @return the list of popular movies
      */
     public List<TmdbMovieDTO> popularMovies() {
         TmdbSearchResponseDTO response = restClient.get()
                 .uri("/movie/popular")
+                .retrieve()
+                .body(TmdbSearchResponseDTO.class);
+        return response != null ? response.getResults() : List.of();
+    }
+
+    /**
+     * Get a list of movies ordered by rating
+     * @return the list of top-rated movies
+     */
+    public List<TmdbMovieDTO> topRatedMovies() {
+        TmdbSearchResponseDTO response = restClient.get()
+                .uri("/movie/top_rated")
+                .retrieve()
+                .body(TmdbSearchResponseDTO.class);
+        return response != null ? response.getResults() : List.of();
+    }
+
+    /**
+     * Get a list of movies that are being released soon
+     * @return the list of upcoming movies
+     */
+    public List<TmdbMovieDTO> upcomingMovies() {
+        TmdbSearchResponseDTO response = restClient.get()
+                .uri("/movie/upcoming")
                 .retrieve()
                 .body(TmdbSearchResponseDTO.class);
         return response != null ? response.getResults() : List.of();

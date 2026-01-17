@@ -69,6 +69,22 @@ public class MovieService {
     }
 
     /**
+     * Uses TmdbClient to fetch the top-rated movies
+     * @return the list of top-rated movies
+     */
+    public List<TmdbMovieDTO> topRatedMovies() {
+        return tmdbClient.topRatedMovies();
+    }
+
+    /**
+     * Uses TmdbClient to fetch upcoming movies
+     * @return the list of upcoming movies
+     */
+    public List<TmdbMovieDTO> upcomingMovies() {
+        return tmdbClient.upcomingMovies();
+    }
+
+    /**
      * Save a movie to the database
      * @param movie the object to be saved
      * @return the saved movie
