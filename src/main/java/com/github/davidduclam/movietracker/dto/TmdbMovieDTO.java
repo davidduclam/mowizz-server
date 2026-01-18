@@ -12,4 +12,5 @@ public class TmdbMovieDTO {
     private LocalDate release_date;
     private String poster_path;
     private String overview;
+    private Double vote_average;
 }
