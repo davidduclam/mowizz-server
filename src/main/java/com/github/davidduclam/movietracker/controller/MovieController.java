@@ -21,9 +21,14 @@ public class MovieController {
         return movieService.searchMovie(query);
     }
 
+//    @GetMapping("/{tmdbId}")
+//    public Movie saveMovie(@PathVariable Long tmdbId) {
+//        return movieService.getOrCreateMovie(tmdbId);
+//    }
+
     @GetMapping("/{tmdbId}")
-    public Movie saveMovie(@PathVariable Long tmdbId) {
-        return movieService.getOrCreateMovie(tmdbId);
+    public TmdbMovieDTO findMovie(@PathVariable Long tmdbId) {
+        return movieService.findMovie(tmdbId);
     }
 
     @GetMapping("/popular")

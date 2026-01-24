@@ -61,6 +61,15 @@ public class MovieService {
     }
 
     /**
+     * Uses TmdbClient to fetch movie details
+     * @param tmdbId the movie id
+     * @return the movie details
+     */
+    public TmdbMovieDTO findMovie(Long tmdbId) {
+        return tmdbClient.fetchMovieDetails(tmdbId);
+    }
+
+    /**
      * Uses TmdbClient to fetch the most popular movies
      * @return the list of popular movies
      */
