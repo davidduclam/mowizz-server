@@ -134,7 +134,11 @@ public class TmdbClient {
             String body = e.getResponseBodyAsString();
             String trimmedBody = body == null ? "" : body.substring(0, Math.min(body.length(), 200));
             logger.error("TMDB {} failed: status={} body={}", action, e.getStatusCode(), trimmedBody, e);
-            throw new TmdbClientException("TMDB " + action + " failed with status " + e.getStatusCode().value(), e);
+            throw new TmdbClientException(
+                    "TMDB " + action + " failed with status " + e.getStatusCode().value(),
+                    e.getStatusCode(),
+                    e
+            );
         } catch (RestClientException e) {
             logger.error("TMDB {} failed: {}", action, e.getMessage(), e);
             throw new TmdbClientException("TMDB " + action + " failed", e);

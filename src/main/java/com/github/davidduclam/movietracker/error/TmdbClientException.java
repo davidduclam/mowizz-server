@@ -1,12 +1,24 @@
 package com.github.davidduclam.movietracker.error;
 
-public class TmdbClientException extends RuntimeException{
+import lombok.Getter;
+import org.springframework.http.HttpStatusCode;
+
+@Getter
+public class TmdbClientException extends RuntimeException {
+
+    private final HttpStatusCode status;
 
     public TmdbClientException(String message) {
-        super(message);
+        this(message, null, null);
     }
 
     public TmdbClientException(String message, Throwable cause) {
-        super(message, cause);
+        this(message, null, cause);
     }
+
+    public TmdbClientException(String message, HttpStatusCode status, Throwable cause) {
+        super(message, cause);
+        this.status = status;
+    }
+
 }
