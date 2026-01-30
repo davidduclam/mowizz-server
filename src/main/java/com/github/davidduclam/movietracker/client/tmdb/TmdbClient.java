@@ -33,6 +33,7 @@ public class TmdbClient {
      * Search a movie from TMDB based on a keyword
      * @param query the keyword to be searched for
      * @return the list of movies
+     * @throws TmdbClientException if an error occurs while searching for movies
      */
     public List<TmdbMovieDTO> searchMovies(String query) {
         TmdbSearchResponseDTO response = execute("search movies", () -> restClient.get()
@@ -54,7 +55,8 @@ public class TmdbClient {
     /**
      * Fetch the details of a specific movie
      * @param tmdbId the ID of the movie from TMDB
-     * @return the movie details from the specified mpvie
+     * @return the movie details from the specified movie
+     * @throws TmdbClientException if an error occurs while fetching movie details
      */
     public TmdbMovieDTO fetchMovieDetails(Long tmdbId) {
         TmdbMovieDTO response = execute("fetch movie details", () -> restClient.get()
@@ -70,6 +72,7 @@ public class TmdbClient {
     /**
      * Get a list of movies ordered by popularity
      * @return the list of popular movies
+     * @throws TmdbClientException if an error occurs while fetching popular movies
      */
     public List<TmdbMovieDTO> popularMovies() {
         TmdbSearchResponseDTO response = execute("fetch popular movies", () -> restClient.get()
@@ -85,6 +88,7 @@ public class TmdbClient {
     /**
      * Get a list of movies ordered by rating
      * @return the list of top-rated movies
+     * @throws TmdbClientException if an error occurs while fetching top-rated movies
      */
     public List<TmdbMovieDTO> topRatedMovies() {
         TmdbSearchResponseDTO response = execute("fetch top-rated movies", () -> restClient.get()
@@ -100,7 +104,7 @@ public class TmdbClient {
     /**
      * Get a list of movies that are being released soon
      * @return the list of upcoming movies
-     *
+     * @throws TmdbClientException if an error occurs while fetching upcoming movies
      */
     public List<TmdbMovieDTO> upcomingMovies() {
         TmdbSearchResponseDTO response = execute("fetch upcoming movies", () -> restClient.get()
@@ -113,6 +117,16 @@ public class TmdbClient {
         return response.getResults();
     }
 
+    /**
+     * Executes a given action by invoking the provided Supplier and handles any exceptions
+     * related to the TMDB API during the execution.
+     *
+     * @param <T> the type of the result produced by the supplier
+     * @param action a string describing the action being executed (used for logging and error messages)
+     * @param call the supplier representing the action to be executed
+     * @return the result of the action executed by the supplier
+     * @throws TmdbClientException if a TMDB-specific error or any other RestClient exception occurs
+     */
     private <T> T execute(String action, Supplier<T> call) {
         try {
             return call.get();
