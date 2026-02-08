@@ -65,7 +65,7 @@ public class MovieService {
      * @param tmdbId the movie id
      * @return the movie details
      */
-    public TmdbMovieDTO findMovie(Long tmdbId) {
+    public TmdbMovieDTO fetchMovieDetails(Long tmdbId) {
         return tmdbClient.fetchMovieDetails(tmdbId);
     }
 
