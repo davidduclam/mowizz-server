@@ -172,6 +172,27 @@ public class TmdbClient {
         return response.getResults();
     }
 
+    /**
+     * Fetches a list of top-rated TV shows from the TMDB API.
+     *
+     * This method sends a request to the TMDB API to retrieve the top-rated TV shows and returns
+     * a list of {@code TmdbTvShowDTO} objects that represent the results. If the response from
+     * the API is null, an exception is thrown.
+     *
+     * @return a list of {@code TmdbTvShowDTO} objects containing information about the top-rated TV shows
+     * @throws TmdbClientException if the API response is null or cannot be retrieved correctly
+     */
+    public List<TmdbTvShowDTO> topRatedTvShows() {
+        TmdbSearchTvShowResponseDTO response = execute("fetch top rated tv shows", () -> restClient.get()
+                .uri("/tv/top_rated")
+                .retrieve()
+                .body(TmdbSearchTvShowResponseDTO.class));
+        if (response == null) {
+            throw new TmdbClientException("TMDB returned an empty response for top rated tv shows");
+        }
+        return response.getResults();
+    }
+
 
     // =======================================================
     // Internal helper

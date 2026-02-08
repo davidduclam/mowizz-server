@@ -39,4 +39,17 @@ public class TvShowService {
     public List<TmdbTvShowDTO> popularTvShows() {
         return tmdbClient.popularTvShows();
     }
+
+    /**
+     * Retrieves a list of top-rated TV shows from the TMDB API.
+     *
+     * This method interacts with the TMDB client to fetch the current list
+     * of TV shows that are highly rated based on the criteria established by TMDB.
+     *
+     * @return a list of {@code TmdbTvShowDTO} objects representing the top-rated TV shows.
+     *         The returned list may be empty if no top-rated TV shows are found.
+     */
+    public List<TmdbTvShowDTO> topRatedTvShows() {
+        return tmdbClient.topRatedTvShows();
+    }
 }

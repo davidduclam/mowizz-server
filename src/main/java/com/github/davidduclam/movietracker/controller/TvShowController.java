@@ -27,4 +27,9 @@ public class TvShowController {
     public List<TmdbTvShowDTO> popularTvShows() {
         return tvShowService.popularTvShows();
     }
+
+    @GetMapping("/top-rated")
+    public List<TmdbTvShowDTO> topRatedTvShows() {
+        return tvShowService.topRatedTvShows();
+    }
 }
