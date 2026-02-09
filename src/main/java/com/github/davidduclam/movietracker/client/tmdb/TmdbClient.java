@@ -1,5 +1,9 @@
 package com.github.davidduclam.movietracker.client.tmdb;
 
+import com.github.davidduclam.movietracker.client.tmdb.dto.TmdbMultiSearchResponseDTO;
+import com.github.davidduclam.movietracker.client.tmdb.dto.TmdbMovieResultDTO;
+import com.github.davidduclam.movietracker.client.tmdb.dto.TmdbSearchResultDTO;
+import com.github.davidduclam.movietracker.client.tmdb.dto.TmdbTvShowResultDTO;
 import com.github.davidduclam.movietracker.dto.TmdbMovieDTO;
 import com.github.davidduclam.movietracker.dto.TmdbSearchMovieResponseDTO;
 import com.github.davidduclam.movietracker.dto.TmdbSearchTvShowResponseDTO;
@@ -29,6 +33,36 @@ public class TmdbClient {
                 .defaultHeader(HttpHeaders.AUTHORIZATION, "Bearer " + accessToken)
                 .defaultHeader(HttpHeaders.ACCEPT, "application/json")
                 .build();
+    }
+
+    // =======================================================
+    // Multi search endpoints for movies and shows
+    // =======================================================
+
+    /**
+     * Searches for movies and TV shows on TMDB based on the given query.
+     *
+     * @param query The search query string used to find matching movies or TV shows.
+     * @return A list of {@code TmdbSearchResultDTO} objects containing the search results for the query.
+     * @throws TmdbClientException If the response from TMDB is null or empty.
+     */
+    public List<TmdbSearchResultDTO> searchMulti(String query) {
+        TmdbMultiSearchResponseDTO response = execute("search multi", () -> restClient.get()
+                .uri(uriBuilder -> uriBuilder
+                        .path("/search/multi")
+                        .queryParam("query", query)
+                        .queryParam("language", "en-US")
+                        .build())
+                .retrieve()
+                .body(TmdbMultiSearchResponseDTO.class));
+
+        if (response == null) {
+            throw new TmdbClientException("TMDB returned an empty response for search multi");
+        }
+        logger.info("Found {} total multi-search results for query {}", response.totalResults(), query);
+        return response.results().stream()
+                .filter(result -> result instanceof TmdbMovieResultDTO || result instanceof TmdbTvShowResultDTO)
+                .toList();
     }
 
     // =======================================================
