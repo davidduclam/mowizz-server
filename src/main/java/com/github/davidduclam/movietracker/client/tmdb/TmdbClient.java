@@ -1,7 +1,9 @@
 package com.github.davidduclam.movietracker.client.tmdb;
 
 import com.github.davidduclam.movietracker.client.tmdb.dto.TmdbMultiSearchResponseDTO;
+import com.github.davidduclam.movietracker.client.tmdb.dto.TmdbMovieResultDTO;
 import com.github.davidduclam.movietracker.client.tmdb.dto.TmdbSearchResultDTO;
+import com.github.davidduclam.movietracker.client.tmdb.dto.TmdbTvShowResultDTO;
 import com.github.davidduclam.movietracker.dto.TmdbMovieDTO;
 import com.github.davidduclam.movietracker.dto.TmdbSearchMovieResponseDTO;
 import com.github.davidduclam.movietracker.dto.TmdbSearchTvShowResponseDTO;
@@ -57,8 +59,10 @@ public class TmdbClient {
         if (response == null) {
             throw new TmdbClientException("TMDB returned an empty response for search multi");
         }
-        logger.info("Found {} movies for query {}", response.totalResults(), query);
-        return response.results();
+        logger.info("Found {} total multi-search results for query {}", response.totalResults(), query);
+        return response.results().stream()
+                .filter(result -> result instanceof TmdbMovieResultDTO || result instanceof TmdbTvShowResultDTO)
+                .toList();
     }
 
     // =======================================================

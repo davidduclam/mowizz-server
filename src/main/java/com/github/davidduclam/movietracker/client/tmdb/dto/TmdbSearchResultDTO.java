@@ -8,7 +8,8 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
         use = JsonTypeInfo.Id.NAME,
         include = JsonTypeInfo.As.EXISTING_PROPERTY,
         property = "media_type",
-        visible = true
+        visible = true,
+        defaultImpl = TmdbIgnoredSearchResultDTO.class
 )
 
 @JsonSubTypes({
@@ -16,12 +17,8 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
         @JsonSubTypes.Type(value = TmdbTvShowResultDTO.class, name = "tv")
 
 })
-public sealed interface TmdbSearchResultDTO permits TmdbMovieResultDTO, TmdbTvShowResultDTO {
+public sealed interface TmdbSearchResultDTO permits TmdbMovieResultDTO, TmdbTvShowResultDTO, TmdbIgnoredSearchResultDTO {
     Long id();
     @JsonProperty("media_type")
     String mediaType();
-    @JsonProperty("poster_path")
-    String posterPath();
-    @JsonProperty("vote_average")
-    double voteAverage();
 }
