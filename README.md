@@ -1,28 +1,105 @@
 # MoWizz Server
 
-Backend service for MoWizz, providing movie discovery via TMDB and basic user management.
-Built with Spring Boot, JPA, Flyway, and PostgreSQL.
+MoWizz Server is a Spring Boot backend for movie and TV discovery using the TMDB API, with PostgreSQL persistence for user data.
 
-## Features
-- Search and fetch movies from TMDB (popular, top-rated, upcoming, and by ID)
-- Basic user CRUD endpoints
-- Database migrations with Flyway
-- OpenAPI spec included for current endpoints
+## Overview
+
+This service provides:
+- TMDB-backed movie discovery endpoints
+- TMDB-backed TV show discovery endpoints
+- Multi-type search (movies, TV shows) via TMDB
+- Basic user management endpoints
+
+## System Architecture
+
+```mermaid
+flowchart LR
+
+    subgraph CLIENT["Client Side"]
+        WEB["User"]
+    end
+
+    subgraph APP["MoWizz Server"]
+        direction TB
+
+        subgraph API["API Layer"]
+            MC["MovieController"]
+            TSC["TvShowController"]
+            SC["SearchController"]
+            UC["UserController"]
+            UMC["UserMediaController"]
+        end
+
+        subgraph BIZ["Service Layer"]
+            MS["MovieService"]
+            TSS["TvShowService"]
+            SS["SearchService"]
+            US["UserService"]
+            UMS["UserMediaService"]
+        end
+
+        subgraph DATA["Persistence Layer"]
+            MR["MovieRepository"]
+            TSR["TvShowRepository"]
+            UR["UserRepository"]
+            UMR["UserMediaRepository"]
+        end
+
+        TC["TmdbClient"]
+    end
+
+    subgraph EXT_API["External API Systems"]
+        TMDB["TMDB API"]
+    end
+
+    subgraph EXT_DATA["External Database"]
+        DB["Supabase"]
+    end
+
+    WEB --> API
+
+    MC --> MS
+    TSC --> TSS
+    SC --> SS
+    UC --> US
+    UMC --> UMS
+
+    UMS --> UMR
+
+    MS --> TC
+    TSS --> TC
+    SS --> TC
+    TC --> TMDB
+
+    MS --> MR
+    TSS --> TSR
+    US --> UR
+
+    MR --> DB
+    TSR --> DB
+    UR --> DB
+    UMR --> DB
+```
 
 ## Tech Stack
-- Java 21
-- Spring Boot 4
-- Spring Web MVC, Spring Data JPA, Validation
-- PostgreSQL + Flyway
-- Maven
 
-## Requirements
-- Java 21+
+- Java 21
+- Spring Boot 4.0.1
+- Spring Web MVC
+- Spring Data JPA
+- Flyway
 - PostgreSQL
+- Maven Wrapper (`./mvnw`)
+
+## Prerequisites
+
+- Java 21+
+- PostgreSQL instance
 - TMDB API access token
 
 ## Configuration
-Set the following environment variables (see `src/main/resources/application.properties`):
+
+Create a `.env` file in the project root (or export environment variables directly):
 
 ```bash
 export DB_URL=your_db_url
@@ -31,30 +108,57 @@ export DB_PASSWORD=your_password
 export TMDB_ACCESS_TOKEN=your_tmdb_access_token
 ```
 
-## Run Locally
+Reference template: `.env.example`
+
+## Running Locally
+
+1. Install dependencies and run the application:
+
 ```bash
 ./mvnw spring-boot:run
 ```
 
-The server starts on `http://localhost:8080`.
+2. API will be available at:
 
-## API Reference
-- OpenAPI spec: `openapi.yaml`
-- Base URL: `http://localhost:8080`
+```text
+http://localhost:8080
+```
 
-### Movie Endpoints
-- `GET /movie/search?query=...`
-- `GET /movie/{tmdbId}`
-- `GET /movie/popular`
-- `GET /movie/top-rated`
-- `GET /movie/upcoming`
+Flyway migrations run at startup, and Hibernate is configured with `ddl-auto=validate`.
 
-### User Endpoints
+## Build and Test
+
+```bash
+./mvnw clean verify
+```
+
+## API Endpoints
+
+### Movies (`/movies`)
+- `GET /movies/search?query=...`
+- `GET /movies/{tmdbId}`
+- `GET /movies/popular`
+- `GET /movies/top-rated`
+- `GET /movies/upcoming`
+
+### TV Shows (`/shows`)
+- `GET /shows/{tmdbId}`
+- `GET /shows/popular`
+- `GET /shows/top-rated`
+
+### Search (`/search`)
+- `GET /search/multi?query=...`
+
+### Users (`/users`)
 - `POST /users`
 - `GET /users`
 - `GET /users/{id}`
 - `DELETE /users/{id}`
 
-## Database Notes
-- Flyway runs on startup; set `DB_*` vars before running.
-- Hibernate is configured with `ddl-auto=validate`.
+## OpenAPI Specification
+
+- `openapi.yaml`
+
+## License
+
+This project is licensed under the MIT License. See `LICENSE` for details.
