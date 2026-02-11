@@ -20,11 +20,6 @@ public class MovieController {
         return movieService.searchMovie(query);
     }
 
-//    @GetMapping("/{tmdbId}")
-//    public Movie saveMovie(@PathVariable Long tmdbId) {
-//        return movieService.getOrCreateMovie(tmdbId);
-//    }
-
     @GetMapping("/{tmdbId}")
     public TmdbMovieDTO fetchMovieDetails(@PathVariable Long tmdbId) {
         return movieService.fetchMovieDetails(tmdbId);

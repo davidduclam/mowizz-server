@@ -1,9 +1,6 @@
 package com.github.davidduclam.movietracker.model;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import lombok.Data;
 
 import java.time.LocalDate;
@@ -13,12 +10,13 @@ import java.time.LocalDate;
 @Table(name = "movies")
 public class Movie {
     @Id
-    @GeneratedValue
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long Id;
 
     private Long tmdbId;
     private String title;
     private LocalDate releaseDate;
     private String posterPath;
-    private String description;
+    private String backdropPath;
+    private String overview;
 }
