@@ -20,4 +20,18 @@ public class GlobalExceptionHandler {
                 .status(status)
                 .body(new ErrorResponse(error, e.getMessage()));
     }
+
+    @ExceptionHandler(MediaAlreadyExistsException.class)
+    public ResponseEntity<ErrorResponse> handleMediaAlreadyExists(MediaAlreadyExistsException exception) {
+        return ResponseEntity
+                .status(HttpStatus.CONFLICT)
+                .body(new ErrorResponse("MEDIA_ALREADY_EXISTS", exception.getMessage()));
+    }
+
+    @ExceptionHandler(UserNotFoundException.class)
+    public ResponseEntity<ErrorResponse> handleUserNotFound(UserNotFoundException exception) {
+        return ResponseEntity
+                .status(HttpStatus.NOT_FOUND)
+                .body(new ErrorResponse("USER_NOT_FOUND", exception.getMessage()));
+    }
 }
