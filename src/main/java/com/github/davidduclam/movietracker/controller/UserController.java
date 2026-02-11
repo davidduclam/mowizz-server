@@ -1,5 +1,6 @@
 package com.github.davidduclam.movietracker.controller;
 
+import com.github.davidduclam.movietracker.model.Movie;
 import com.github.davidduclam.movietracker.model.User;
 import com.github.davidduclam.movietracker.service.UserService;
 import org.springframework.http.ResponseEntity;
@@ -17,8 +18,8 @@ public class UserController {
     }
 
     @PostMapping
-    public User createUser() {
-        return userService.saveUser(new User());
+    public User createUser(@RequestBody User user) {
+        return userService.saveUser(user);
     }
 
     @GetMapping
