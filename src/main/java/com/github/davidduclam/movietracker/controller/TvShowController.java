@@ -1,11 +1,9 @@
 package com.github.davidduclam.movietracker.controller;
 
 import com.github.davidduclam.movietracker.dto.TmdbTvShowDTO;
+import com.github.davidduclam.movietracker.model.TvShow;
 import com.github.davidduclam.movietracker.service.TvShowService;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
