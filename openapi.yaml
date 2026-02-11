@@ -5,9 +5,22 @@ info:
   description: OpenAPI documentation for current MoWizz server endpoints.
 servers:
   - url: http://localhost:8080
+tags:
+  - name: Movies
+    description: Movie discovery endpoints backed by TMDB
+  - name: TV Shows
+    description: TV show discovery endpoints backed by TMDB
+  - name: Search
+    description: Cross-media TMDB search endpoints
+  - name: Users
+    description: User management endpoints
+  - name: User Media
+    description: Endpoints for saving user-linked movies and TV shows
 paths:
   /movies/search:
     get:
+      tags: [Movies]
+      operationId: searchMovies
       summary: Search movies by query
       parameters:
         - in: query
@@ -27,6 +40,8 @@ paths:
 
   /movies/{tmdbId}:
     get:
+      tags: [Movies]
+      operationId: getMovieByTmdbId
       summary: Get movie details by TMDB id
       parameters:
         - in: path
@@ -45,6 +60,8 @@ paths:
 
   /movies/popular:
     get:
+      tags: [Movies]
+      operationId: getPopularMovies
       summary: Get popular movies
       responses:
         "200":
@@ -58,6 +75,8 @@ paths:
 
   /movies/top-rated:
     get:
+      tags: [Movies]
+      operationId: getTopRatedMovies
       summary: Get top rated movies
       responses:
         "200":
@@ -71,6 +90,8 @@ paths:
 
   /movies/upcoming:
     get:
+      tags: [Movies]
+      operationId: getUpcomingMovies
       summary: Get upcoming movies
       responses:
         "200":
@@ -84,6 +105,8 @@ paths:
 
   /shows/{tmdbId}:
     get:
+      tags: [TV Shows]
+      operationId: getTvShowByTmdbId
       summary: Get TV show details by TMDB id
       parameters:
         - in: path
@@ -102,6 +125,8 @@ paths:
 
   /shows/popular:
     get:
+      tags: [TV Shows]
+      operationId: getPopularTvShows
       summary: Get popular TV shows
       responses:
         "200":
@@ -115,6 +140,8 @@ paths:
 
   /shows/top-rated:
     get:
+      tags: [TV Shows]
+      operationId: getTopRatedTvShows
       summary: Get top rated TV shows
       responses:
         "200":
@@ -128,7 +155,10 @@ paths:
 
   /search/multi:
     get:
+      tags: [Search]
+      operationId: multiSearch
       summary: Multi search across TMDB media types
+      description: Returns movie and TV results, plus unknown media types in a minimal fallback shape.
       parameters:
         - in: query
           name: query
@@ -137,7 +167,7 @@ paths:
             type: string
       responses:
         "200":
-          description: Matching results (movies and TV shows)
+          description: Matching results
           content:
             application/json:
               schema:
@@ -147,7 +177,15 @@ paths:
 
   /users:
     post:
+      tags: [Users]
+      operationId: createUser
       summary: Create a new user
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/User"
       responses:
         "200":
           description: User created
@@ -156,6 +194,8 @@ paths:
               schema:
                 $ref: "#/components/schemas/User"
     get:
+      tags: [Users]
+      operationId: listUsers
       summary: List all users
       responses:
         "200":
@@ -169,6 +209,8 @@ paths:
 
   /users/{id}:
     get:
+      tags: [Users]
+      operationId: getUserById
       summary: Get a user by id
       parameters:
         - in: path
@@ -187,6 +229,8 @@ paths:
         "404":
           description: User not found
     delete:
+      tags: [Users]
+      operationId: deleteUserById
       summary: Delete a user by id
       parameters:
         - in: path
@@ -199,6 +243,60 @@ paths:
         "200":
           description: User deleted
 
+  /users/{user_id}/movie:
+    post:
+      tags: [User Media]
+      operationId: saveMovieForUser
+      summary: Save a movie for a user by TMDB id
+      parameters:
+        - in: path
+          name: user_id
+          required: true
+          schema:
+            type: integer
+            format: int64
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: integer
+              format: int64
+      responses:
+        "200":
+          description: User media entry created for movie
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UserMedia"
+
+  /users/{user_id}/tvshow:
+    post:
+      tags: [User Media]
+      operationId: saveTvShowForUser
+      summary: Save a TV show for a user by TMDB id
+      parameters:
+        - in: path
+          name: user_id
+          required: true
+          schema:
+            type: integer
+            format: int64
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: integer
+              format: int64
+      responses:
+        "200":
+          description: User media entry created for TV show
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UserMedia"
+
 components:
   schemas:
     User:
@@ -207,6 +305,31 @@ components:
         id:
           type: integer
           format: int64
+        username:
+          type: string
+
+    UserMedia:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        user:
+          $ref: "#/components/schemas/User"
+        tmdbId:
+          type: integer
+          format: int64
+        watched:
+          type: boolean
+        personalRating:
+          type: number
+          format: double
+        watchDate:
+          type: string
+          format: date
+          nullable: true
+        mediaType:
+          type: string
 
     TmdbMovie:
       type: object

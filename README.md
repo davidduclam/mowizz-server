@@ -7,7 +7,7 @@ MoWizz Server is a Spring Boot backend for movie and TV discovery using the TMDB
 This service provides:
 - TMDB-backed movie discovery endpoints
 - TMDB-backed TV show discovery endpoints
-- Multi-type search (movies, TV shows) via TMDB
+- Multi-search via TMDB
 - Basic user management endpoints
 
 ## System Architecture
@@ -64,16 +64,19 @@ flowchart LR
     UC --> US
     UMC --> UMS
 
-    UMS --> UMR
-
+    SS --> TC
     MS --> TC
     TSS --> TC
-    SS --> TC
+    UMS --> TC
     TC --> TMDB
 
     MS --> MR
     TSS --> TSR
     US --> UR
+    UMS --> UMR
+    UMS --> MR
+    UMS --> TSR
+    UMS --> UR
 
     MR --> DB
     TSR --> DB
@@ -99,7 +102,7 @@ flowchart LR
 
 ## Configuration
 
-Create a `.env` file in the project root (or export environment variables directly):
+Create a `.env` file in the project root (or export variables directly):
 
 ```bash
 export DB_URL=your_db_url
@@ -112,19 +115,17 @@ Reference template: `.env.example`
 
 ## Running Locally
 
-1. Install dependencies and run the application:
-
 ```bash
 ./mvnw spring-boot:run
 ```
 
-2. API will be available at:
+Server URL:
 
 ```text
 http://localhost:8080
 ```
 
-Flyway migrations run at startup, and Hibernate is configured with `ddl-auto=validate`.
+Flyway migrations run on startup, and Hibernate is configured with `ddl-auto=validate`.
 
 ## Build and Test
 
@@ -155,10 +156,18 @@ Flyway migrations run at startup, and Hibernate is configured with `ddl-auto=val
 - `GET /users/{id}`
 - `DELETE /users/{id}`
 
-## OpenAPI Specification
+### User Media
+- `POST /users/{user_id}/movie` (body: TMDB movie id as a JSON number)
+- `POST /users/{user_id}/tvshow` (body: TMDB TV show id as a JSON number)
 
-- `openapi.yaml`
+## OpenAPI
+
+The canonical API contract lives in `openapi.yaml`.
+
+Use one of the following:
+- Import `openapi.yaml` into Swagger UI, Postman, or Insomnia.
+- Serve it in Swagger UI locally with your preferred OpenAPI viewer.
 
 ## License
 
-This project is licensed under the MIT License. See `LICENSE` for details.
+This project is licensed under the MIT License. See [LICENSE](LICENSE) for details.
