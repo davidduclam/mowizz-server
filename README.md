@@ -157,15 +157,15 @@ Flyway migrations run on startup, and Hibernate is configured with `ddl-auto=val
 - `DELETE /users/{id}`
 
 ### User Media
-- `POST /users/{user_id}/movie` (body: TMDB movie id as a JSON number)
-- `POST /users/{user_id}/tvshow` (body: TMDB TV show id as a JSON number)
+- `POST /users/{user_id}/media`
+  request body example: `{ "tmdbId": 12345, "mediaType": "movie" }`
 
 ## OpenAPI
 
-The canonical API contract lives in `openapi.yaml`.
+The canonical API contract lives in [openapi.yaml](openapi.yaml).
 
 Use one of the following:
-- Import `openapi.yaml` into Swagger UI, Postman, or Insomnia.
+- Import [openapi.yaml](openapi.yaml) into Swagger UI, Postman, or Insomnia.
 - Serve it in Swagger UI locally with your preferred OpenAPI viewer.
 
 ## License

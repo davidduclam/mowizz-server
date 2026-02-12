@@ -243,11 +243,11 @@ paths:
         "200":
           description: User deleted
 
-  /users/{user_id}/movie:
+  /users/{user_id}/media:
     post:
       tags: [User Media]
-      operationId: saveMovieForUser
-      summary: Save a movie for a user by TMDB id
+      operationId: saveMediaForUser
+      summary: Save movie or TV show media for a user
       parameters:
         - in: path
           name: user_id
@@ -260,38 +260,10 @@ paths:
         content:
           application/json:
             schema:
-              type: integer
-              format: int64
+              $ref: "#/components/schemas/AddUserMediaRequest"
       responses:
         "200":
-          description: User media entry created for movie
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/UserMedia"
-
-  /users/{user_id}/tvshow:
-    post:
-      tags: [User Media]
-      operationId: saveTvShowForUser
-      summary: Save a TV show for a user by TMDB id
-      parameters:
-        - in: path
-          name: user_id
-          required: true
-          schema:
-            type: integer
-            format: int64
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: integer
-              format: int64
-      responses:
-        "200":
-          description: User media entry created for TV show
+          description: User media entry created
           content:
             application/json:
               schema:
@@ -307,6 +279,22 @@ components:
           format: int64
         username:
           type: string
+
+    AddUserMediaRequest:
+      type: object
+      required:
+        - tmdbId
+        - mediaType
+      properties:
+        tmdbId:
+          type: integer
+          format: int64
+        mediaType:
+          $ref: "#/components/schemas/MediaType"
+
+    MediaType:
+      type: string
+      enum: [movie, tv]
 
     UserMedia:
       type: object
@@ -329,7 +317,7 @@ components:
           format: date
           nullable: true
         mediaType:
-          type: string
+          $ref: "#/components/schemas/MediaType"
 
     TmdbMovie:
       type: object
