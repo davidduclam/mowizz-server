@@ -7,15 +7,15 @@ import java.time.LocalDate;
 
 @Data
 @Entity
-@Table(name = "movies")
-public class Movie {
+@Table(name = "tv_shows")
+public class TvShow {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long Id;
+    private Long id;
 
     private Long tmdbId;
     private String title;
-    private LocalDate releaseDate;
+    private LocalDate firstAirDate;
     private String posterPath;
     private String backdropPath;
     private String overview;

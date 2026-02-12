@@ -7,22 +7,22 @@ import java.time.LocalDate;
 
 @Data
 @Entity
-@Table(name = "user_movies")
-public class UserMovie {
+@Table(name = "user_media")
+public class UserMedia {
     @Id
-    @GeneratedValue
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @ManyToOne
     @JoinColumn(name = "user_id")
     private User user;
 
-    @ManyToOne
-    @JoinColumn(name = "movie_id")
-    private Movie movie;
-
+    private Long tmdbId;
     private boolean watched = false;
-
     private Double personalRating;
     private LocalDate watchDate;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private MediaType mediaType;
 }

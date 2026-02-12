@@ -1,14 +1,13 @@
 package com.github.davidduclam.movietracker.controller;
 
 import com.github.davidduclam.movietracker.dto.TmdbMovieDTO;
-import com.github.davidduclam.movietracker.model.Movie;
 import com.github.davidduclam.movietracker.service.MovieService;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
 @RestController
-@RequestMapping("/movie")
+@RequestMapping("/movies")
 public class MovieController {
     private final MovieService movieService;
 
@@ -21,14 +20,9 @@ public class MovieController {
         return movieService.searchMovie(query);
     }
 
-//    @GetMapping("/{tmdbId}")
-//    public Movie saveMovie(@PathVariable Long tmdbId) {
-//        return movieService.getOrCreateMovie(tmdbId);
-//    }
-
     @GetMapping("/{tmdbId}")
-    public TmdbMovieDTO findMovie(@PathVariable Long tmdbId) {
-        return movieService.findMovie(tmdbId);
+    public TmdbMovieDTO fetchMovieDetails(@PathVariable Long tmdbId) {
+        return movieService.fetchMovieDetails(tmdbId);
     }
 
     @GetMapping("/popular")

@@ -1,13 +1,26 @@
 openapi: 3.0.3
 info:
   title: MoWizz API
-  version: 1.0.0
-  description: OpenAPI documentation for current endpoints.
+  version: 1.1.0
+  description: OpenAPI documentation for current MoWizz server endpoints.
 servers:
   - url: http://localhost:8080
+tags:
+  - name: Movies
+    description: Movie discovery endpoints backed by TMDB
+  - name: TV Shows
+    description: TV show discovery endpoints backed by TMDB
+  - name: Search
+    description: Cross-media TMDB search endpoints
+  - name: Users
+    description: User management endpoints
+  - name: User Media
+    description: Endpoints for saving user-linked movies and TV shows
 paths:
-  /movie/search:
+  /movies/search:
     get:
+      tags: [Movies]
+      operationId: searchMovies
       summary: Search movies by query
       parameters:
         - in: query
@@ -24,9 +37,12 @@ paths:
                 type: array
                 items:
                   $ref: "#/components/schemas/TmdbMovie"
-  /movie/{tmdbId}:
+
+  /movies/{tmdbId}:
     get:
-      summary: Get a TMDB movie by TMDB id
+      tags: [Movies]
+      operationId: getMovieByTmdbId
+      summary: Get movie details by TMDB id
       parameters:
         - in: path
           name: tmdbId
@@ -41,8 +57,11 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/TmdbMovie"
-  /movie/popular:
+
+  /movies/popular:
     get:
+      tags: [Movies]
+      operationId: getPopularMovies
       summary: Get popular movies
       responses:
         "200":
@@ -53,8 +72,11 @@ paths:
                 type: array
                 items:
                   $ref: "#/components/schemas/TmdbMovie"
-  /movie/top-rated:
+
+  /movies/top-rated:
     get:
+      tags: [Movies]
+      operationId: getTopRatedMovies
       summary: Get top rated movies
       responses:
         "200":
@@ -65,8 +87,11 @@ paths:
                 type: array
                 items:
                   $ref: "#/components/schemas/TmdbMovie"
-  /movie/upcoming:
+
+  /movies/upcoming:
     get:
+      tags: [Movies]
+      operationId: getUpcomingMovies
       summary: Get upcoming movies
       responses:
         "200":
@@ -77,9 +102,90 @@ paths:
                 type: array
                 items:
                   $ref: "#/components/schemas/TmdbMovie"
+
+  /shows/{tmdbId}:
+    get:
+      tags: [TV Shows]
+      operationId: getTvShowByTmdbId
+      summary: Get TV show details by TMDB id
+      parameters:
+        - in: path
+          name: tmdbId
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        "200":
+          description: TV show found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TmdbTvShow"
+
+  /shows/popular:
+    get:
+      tags: [TV Shows]
+      operationId: getPopularTvShows
+      summary: Get popular TV shows
+      responses:
+        "200":
+          description: Popular TV shows
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/TmdbTvShow"
+
+  /shows/top-rated:
+    get:
+      tags: [TV Shows]
+      operationId: getTopRatedTvShows
+      summary: Get top rated TV shows
+      responses:
+        "200":
+          description: Top rated TV shows
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/TmdbTvShow"
+
+  /search/multi:
+    get:
+      tags: [Search]
+      operationId: multiSearch
+      summary: Multi search across TMDB media types
+      description: Returns movie and TV results, plus unknown media types in a minimal fallback shape.
+      parameters:
+        - in: query
+          name: query
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Matching results
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/TmdbSearchResult"
+
   /users:
     post:
+      tags: [Users]
+      operationId: createUser
       summary: Create a new user
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/User"
       responses:
         "200":
           description: User created
@@ -88,6 +194,8 @@ paths:
               schema:
                 $ref: "#/components/schemas/User"
     get:
+      tags: [Users]
+      operationId: listUsers
       summary: List all users
       responses:
         "200":
@@ -98,8 +206,11 @@ paths:
                 type: array
                 items:
                   $ref: "#/components/schemas/User"
+
   /users/{id}:
     get:
+      tags: [Users]
+      operationId: getUserById
       summary: Get a user by id
       parameters:
         - in: path
@@ -118,6 +229,8 @@ paths:
         "404":
           description: User not found
     delete:
+      tags: [Users]
+      operationId: deleteUserById
       summary: Delete a user by id
       parameters:
         - in: path
@@ -129,6 +242,33 @@ paths:
       responses:
         "200":
           description: User deleted
+
+  /users/{user_id}/media:
+    post:
+      tags: [User Media]
+      operationId: saveMediaForUser
+      summary: Save movie or TV show media for a user
+      parameters:
+        - in: path
+          name: user_id
+          required: true
+          schema:
+            type: integer
+            format: int64
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AddUserMediaRequest"
+      responses:
+        "200":
+          description: User media entry created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UserMedia"
+
 components:
   schemas:
     User:
@@ -137,24 +277,48 @@ components:
         id:
           type: integer
           format: int64
-    Movie:
+        username:
+          type: string
+
+    AddUserMediaRequest:
+      type: object
+      required:
+        - tmdbId
+        - mediaType
+      properties:
+        tmdbId:
+          type: integer
+          format: int64
+        mediaType:
+          $ref: "#/components/schemas/MediaType"
+
+    MediaType:
+      type: string
+      enum: [movie, tv]
+
+    UserMedia:
       type: object
       properties:
         id:
           type: integer
           format: int64
+        user:
+          $ref: "#/components/schemas/User"
         tmdbId:
           type: integer
           format: int64
-        title:
-          type: string
-        releaseDate:
+        watched:
+          type: boolean
+        personalRating:
+          type: number
+          format: double
+        watchDate:
           type: string
           format: date
-        posterPath:
-          type: string
-        description:
-          type: string
+          nullable: true
+        mediaType:
+          $ref: "#/components/schemas/MediaType"
+
     TmdbMovie:
       type: object
       properties:
@@ -168,8 +332,104 @@ components:
           format: date
         poster_path:
           type: string
+          nullable: true
+        backdrop_path:
+          type: string
+          nullable: true
         overview:
           type: string
         vote_average:
           type: number
           format: double
+
+    TmdbTvShow:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        name:
+          type: string
+        first_air_date:
+          type: string
+          format: date
+        poster_path:
+          type: string
+          nullable: true
+        backdrop_path:
+          type: string
+          nullable: true
+        overview:
+          type: string
+        vote_average:
+          type: number
+          format: double
+
+    TmdbSearchResult:
+      oneOf:
+        - $ref: "#/components/schemas/TmdbMovieSearchResult"
+        - $ref: "#/components/schemas/TmdbTvShowSearchResult"
+        - $ref: "#/components/schemas/TmdbIgnoredSearchResult"
+      discriminator:
+        propertyName: media_type
+        mapping:
+          movie: "#/components/schemas/TmdbMovieSearchResult"
+          tv: "#/components/schemas/TmdbTvShowSearchResult"
+
+    TmdbMovieSearchResult:
+      type: object
+      required:
+        - id
+        - media_type
+      properties:
+        id:
+          type: integer
+          format: int64
+        media_type:
+          type: string
+          enum: [movie]
+        poster_path:
+          type: string
+          nullable: true
+        vote_average:
+          type: number
+          format: double
+        title:
+          type: string
+        release_date:
+          type: string
+
+    TmdbTvShowSearchResult:
+      type: object
+      required:
+        - id
+        - media_type
+      properties:
+        id:
+          type: integer
+          format: int64
+        media_type:
+          type: string
+          enum: [tv]
+        poster_path:
+          type: string
+          nullable: true
+        vote_average:
+          type: number
+          format: double
+        name:
+          type: string
+        first_air_date:
+          type: string
+
+    TmdbIgnoredSearchResult:
+      type: object
+      required:
+        - id
+        - media_type
+      properties:
+        id:
+          type: integer
+          format: int64
+        media_type:
+          type: string

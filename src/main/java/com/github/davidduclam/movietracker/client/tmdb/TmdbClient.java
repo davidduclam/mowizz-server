@@ -1,7 +1,13 @@
 package com.github.davidduclam.movietracker.client.tmdb;
 
+import com.github.davidduclam.movietracker.client.tmdb.dto.TmdbMultiSearchResponseDTO;
+import com.github.davidduclam.movietracker.client.tmdb.dto.TmdbMovieResultDTO;
+import com.github.davidduclam.movietracker.client.tmdb.dto.TmdbSearchResultDTO;
+import com.github.davidduclam.movietracker.client.tmdb.dto.TmdbTvShowResultDTO;
 import com.github.davidduclam.movietracker.dto.TmdbMovieDTO;
-import com.github.davidduclam.movietracker.dto.TmdbSearchResponseDTO;
+import com.github.davidduclam.movietracker.dto.TmdbSearchMovieResponseDTO;
+import com.github.davidduclam.movietracker.dto.TmdbSearchTvShowResponseDTO;
+import com.github.davidduclam.movietracker.dto.TmdbTvShowDTO;
 import com.github.davidduclam.movietracker.error.TmdbClientException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -29,21 +35,56 @@ public class TmdbClient {
                 .build();
     }
 
+    // =======================================================
+    // Multi search endpoints for movies and shows
+    // =======================================================
+
+    /**
+     * Searches for movies and TV shows on TMDB based on the given query.
+     *
+     * @param query The search query string used to find matching movies or TV shows.
+     * @return A list of {@code TmdbSearchResultDTO} objects containing the search results for the query.
+     * @throws TmdbClientException If the response from TMDB is null or empty.
+     */
+    public List<TmdbSearchResultDTO> searchMulti(String query) {
+        TmdbMultiSearchResponseDTO response = execute("search multi", () -> restClient.get()
+                .uri(uriBuilder -> uriBuilder
+                        .path("/search/multi")
+                        .queryParam("query", query)
+                        .queryParam("language", "en-US")
+                        .build())
+                .retrieve()
+                .body(TmdbMultiSearchResponseDTO.class));
+
+        if (response == null) {
+            throw new TmdbClientException("TMDB returned an empty response for search multi");
+        }
+        logger.info("Found {} total multi-search results for query {}", response.totalResults(), query);
+        return response.results().stream()
+                .filter(result -> result instanceof TmdbMovieResultDTO || result instanceof TmdbTvShowResultDTO)
+                .toList();
+    }
+
+    // =======================================================
+    // Movie endpoints
+    // =======================================================
+
     /**
      * Search a movie from TMDB based on a keyword
+     *
      * @param query the keyword to be searched for
      * @return the list of movies
      * @throws TmdbClientException if an error occurs while searching for movies
      */
     public List<TmdbMovieDTO> searchMovies(String query) {
-        TmdbSearchResponseDTO response = execute("search movies", () -> restClient.get()
+        TmdbSearchMovieResponseDTO response = execute("search movies", () -> restClient.get()
                 .uri(uriBuilder -> uriBuilder
                         .path("/search/movie")
                         .queryParam("query", query)
                         .queryParam("language", "en-US")
                         .build())
                 .retrieve()
-                .body(TmdbSearchResponseDTO.class));
+                .body(TmdbSearchMovieResponseDTO.class));
 
         if (response == null) {
             throw new TmdbClientException("TMDB returned an empty response for search");
@@ -54,6 +95,7 @@ public class TmdbClient {
 
     /**
      * Fetch the details of a specific movie
+     *
      * @param tmdbId the ID of the movie from TMDB
      * @return the movie details from the specified movie
      * @throws TmdbClientException if an error occurs while fetching movie details
@@ -71,14 +113,15 @@ public class TmdbClient {
 
     /**
      * Get a list of movies ordered by popularity
+     *
      * @return the list of popular movies
      * @throws TmdbClientException if an error occurs while fetching popular movies
      */
     public List<TmdbMovieDTO> popularMovies() {
-        TmdbSearchResponseDTO response = execute("fetch popular movies", () -> restClient.get()
+        TmdbSearchMovieResponseDTO response = execute("fetch popular movies", () -> restClient.get()
                 .uri("/movie/popular")
                 .retrieve()
-                .body(TmdbSearchResponseDTO.class));
+                .body(TmdbSearchMovieResponseDTO.class));
         if (response == null) {
             throw new TmdbClientException("TMDB returned an empty response for popular movies");
         }
@@ -87,14 +130,15 @@ public class TmdbClient {
 
     /**
      * Get a list of movies ordered by rating
+     *
      * @return the list of top-rated movies
      * @throws TmdbClientException if an error occurs while fetching top-rated movies
      */
     public List<TmdbMovieDTO> topRatedMovies() {
-        TmdbSearchResponseDTO response = execute("fetch top-rated movies", () -> restClient.get()
+        TmdbSearchMovieResponseDTO response = execute("fetch top-rated movies", () -> restClient.get()
                 .uri("/movie/top_rated")
                 .retrieve()
-                .body(TmdbSearchResponseDTO.class));
+                .body(TmdbSearchMovieResponseDTO.class));
         if (response == null) {
             throw new TmdbClientException("TMDB returned an empty response for top-rated movies");
         }
@@ -103,19 +147,90 @@ public class TmdbClient {
 
     /**
      * Get a list of movies that are being released soon
+     *
      * @return the list of upcoming movies
      * @throws TmdbClientException if an error occurs while fetching upcoming movies
      */
     public List<TmdbMovieDTO> upcomingMovies() {
-        TmdbSearchResponseDTO response = execute("fetch upcoming movies", () -> restClient.get()
+        TmdbSearchMovieResponseDTO response = execute("fetch upcoming movies", () -> restClient.get()
                 .uri("/movie/upcoming")
                 .retrieve()
-                .body(TmdbSearchResponseDTO.class));
+                .body(TmdbSearchMovieResponseDTO.class));
         if (response == null) {
             throw new TmdbClientException("TMDB returned an empty response for upcoming movies");
         }
         return response.getResults();
     }
+
+    // =======================================================
+    // TV Show endpoints
+    // =======================================================
+
+    /**
+     * Fetches the details of a specific TV show from TMDB.
+     *
+     * @param tmdbId the ID of the TV show from TMDB
+     * @return the details of the specified TV show as a {@code TmdbTvShowDTO} object
+     * @throws TmdbClientException if an error occurs while fetching TV show details
+     */
+    public TmdbTvShowDTO fetchTvShowDetails(Long tmdbId) {
+        TmdbTvShowDTO response = execute("fetch tv show details", () -> restClient.get()
+                .uri("/tv/{series_id}", tmdbId)
+                .retrieve()
+                .body(TmdbTvShowDTO.class));
+        if (response == null) {
+            throw new TmdbClientException("TMDB returned an empty response for tv show details");
+        }
+        return response;
+    }
+
+    /**
+     * Fetches a list of popular TV shows from the TMDB API.
+     *
+     * This method makes a request to the TMDB API's "popular TV shows" endpoint
+     * and processes the response to extract and return the list of popular TV shows.
+     * If the response is null, an exception is thrown to indicate an error retrieving data.
+     *
+     * @return a list of {@code TmdbMovieDTO} objects representing popular TV shows
+     *         retrieved from the TMDB API. The list may be empty if no shows are found.
+     * @throws TmdbClientException if the TMDB API returns an empty response
+     */
+    public List<TmdbTvShowDTO> popularTvShows() {
+        TmdbSearchTvShowResponseDTO response = execute("fetch popular tv shows", () -> restClient.get()
+                .uri("/tv/popular")
+                .retrieve()
+                .body(TmdbSearchTvShowResponseDTO.class));
+        if (response == null) {
+            throw new TmdbClientException("TMDB returned an empty response for popular tv shows");
+        }
+        return response.getResults();
+    }
+
+    /**
+     * Fetches a list of top-rated TV shows from the TMDB API.
+     *
+     * This method sends a request to the TMDB API to retrieve the top-rated TV shows and returns
+     * a list of {@code TmdbTvShowDTO} objects that represent the results. If the response from
+     * the API is null, an exception is thrown.
+     *
+     * @return a list of {@code TmdbTvShowDTO} objects containing information about the top-rated TV shows
+     * @throws TmdbClientException if the API response is null or cannot be retrieved correctly
+     */
+    public List<TmdbTvShowDTO> topRatedTvShows() {
+        TmdbSearchTvShowResponseDTO response = execute("fetch top rated tv shows", () -> restClient.get()
+                .uri("/tv/top_rated")
+                .retrieve()
+                .body(TmdbSearchTvShowResponseDTO.class));
+        if (response == null) {
+            throw new TmdbClientException("TMDB returned an empty response for top rated tv shows");
+        }
+        return response.getResults();
+    }
+
+
+    // =======================================================
+    // Internal helper
+    // =======================================================
 
     /**
      * Executes a given action by invoking the provided Supplier and handles any exceptions

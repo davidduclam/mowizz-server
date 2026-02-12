@@ -1,14 +1,13 @@
 package com.github.davidduclam.movietracker.service;
 
 import com.github.davidduclam.movietracker.client.tmdb.TmdbClient;
+import com.github.davidduclam.movietracker.dto.AddUserMediaRequestDTO;
 import com.github.davidduclam.movietracker.dto.TmdbMovieDTO;
 import com.github.davidduclam.movietracker.model.Movie;
 import com.github.davidduclam.movietracker.repository.MovieRepository;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.NoSuchElementException;
-import java.util.Optional;
 
 @Service
 public class MovieService {
@@ -21,33 +20,33 @@ public class MovieService {
     }
 
     /**
-     * Convert a TmdbMovieDTO to a Movie object
-     * @param tmdbMovieDTO the DTO to be converted
-     * @return the converted movie
+     * Converts a TmdbMovieDTO object to a Movie entity.
+     *
+     * @param tmdbMovieDTO the DTO containing movie details from TMDb
+     * @return the converted Movie entity
      */
-    public Movie convertDtoToMovie(TmdbMovieDTO tmdbMovieDTO) {
+    private Movie convertTmdbMovieDtoToMovie(TmdbMovieDTO tmdbMovieDTO) {
         Movie movie = new Movie();
         movie.setTmdbId(tmdbMovieDTO.getId());
         movie.setTitle(tmdbMovieDTO.getTitle());
         movie.setReleaseDate(tmdbMovieDTO.getRelease_date());
         movie.setPosterPath(tmdbMovieDTO.getPoster_path());
-        movie.setDescription(tmdbMovieDTO.getOverview());
+        movie.setBackdropPath(tmdbMovieDTO.getBackdrop_path());
+        movie.setOverview(tmdbMovieDTO.getOverview());
         return movie;
     }
 
     /**
-     * Search the database for the movie, if not create an entry for the movie in the DB
-     * @param tmdbId the movie to be searched for
-     * @return the retrieved or existing movie
+     * Saves a movie to the database if it does not already exist.
+     * The movie details are fetched using the TMDb ID provided in the request DTO.
+     * The fetched details are converted into a Movie entity and then saved to the repository.
+     *
+     * @param addUserMediaRequestDTO the DTO containing the TMDb ID of the movie to be saved
      */
-    public Movie getOrCreateMovie(Long tmdbId) {
-        Optional<Movie> m = movieRepository.findByTmdbId(tmdbId);
-
-        if (m.isEmpty()) {
-            Movie movie = convertDtoToMovie(tmdbClient.fetchMovieDetails(tmdbId));
-            return movieRepository.findByTmdbId(tmdbId).orElseGet(() -> movieRepository.save(movie));
-        } else {
-            return m.orElseThrow(() -> new NoSuchElementException("Movie not found in DB"));
+    public void saveMovieToDb(AddUserMediaRequestDTO addUserMediaRequestDTO) {
+        if (movieRepository.findByTmdbId(addUserMediaRequestDTO.getTmdbId()).isEmpty()) {
+            Movie movie = convertTmdbMovieDtoToMovie(fetchMovieDetails(addUserMediaRequestDTO.getTmdbId()));
+            movieRepository.save(movie);
         }
     }
 
@@ -65,7 +64,7 @@ public class MovieService {
      * @param tmdbId the movie id
      * @return the movie details
      */
-    public TmdbMovieDTO findMovie(Long tmdbId) {
+    public TmdbMovieDTO fetchMovieDetails(Long tmdbId) {
         return tmdbClient.fetchMovieDetails(tmdbId);
     }
 
@@ -91,24 +90,6 @@ public class MovieService {
      */
     public List<TmdbMovieDTO> upcomingMovies() {
         return tmdbClient.upcomingMovies();
-    }
-
-    /**
-     * Save a movie to the database
-     * @param movie the object to be saved
-     * @return the saved movie
-     */
-    public Movie saveMovie(Movie movie) {
-        return movieRepository.save(movie);
-    }
-
-    /**
-     * Searches for a movie in the database
-     * @param tmdbId the id to be searched for
-     * @return the movie if found
-     */
-    public Optional<Movie> findByTmdbId(Long tmdbId) {
-        return movieRepository.findByTmdbId(tmdbId);
     }
 
 }
