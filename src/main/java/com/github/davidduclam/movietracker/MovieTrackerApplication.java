@@ -18,7 +18,6 @@ public class MovieTrackerApplication {
     @Bean
     public CommandLineRunner testConnection(DataSource dataSource) {
         return args -> {
-            System.out.println("--- Testing Supabase Connection ---");
             try (Connection connection = dataSource.getConnection()) {
                 String catalog = connection.getCatalog();
                 System.out.println("✅ SUCCESS: Connected to Supabase!");
