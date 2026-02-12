@@ -1,15 +1,13 @@
 package com.github.davidduclam.movietracker.service;
 
 import com.github.davidduclam.movietracker.client.tmdb.TmdbClient;
+import com.github.davidduclam.movietracker.dto.AddUserMediaRequestDTO;
 import com.github.davidduclam.movietracker.dto.TmdbMovieDTO;
-import com.github.davidduclam.movietracker.error.MediaAlreadyExistsException;
 import com.github.davidduclam.movietracker.model.Movie;
 import com.github.davidduclam.movietracker.repository.MovieRepository;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-
-import static com.github.davidduclam.movietracker.service.UserMediaService.getMovie;
 
 @Service
 public class MovieService {
@@ -24,30 +22,32 @@ public class MovieService {
     /**
      * Converts a TmdbMovieDTO object to a Movie entity.
      *
-     * @param tmdbMovieDTO the {@code TmdbMovieDTO} object containing movie details retrieved from TMDb
-     * @return a {@code Movie} entity populated with data from the provided {@code TmdbMovieDTO}
+     * @param tmdbMovieDTO the DTO containing movie details from TMDb
+     * @return the converted Movie entity
      */
     private Movie convertTmdbMovieDtoToMovie(TmdbMovieDTO tmdbMovieDTO) {
-        return getMovie(tmdbMovieDTO);
+        Movie movie = new Movie();
+        movie.setTmdbId(tmdbMovieDTO.getId());
+        movie.setTitle(tmdbMovieDTO.getTitle());
+        movie.setReleaseDate(tmdbMovieDTO.getRelease_date());
+        movie.setPosterPath(tmdbMovieDTO.getPoster_path());
+        movie.setBackdropPath(tmdbMovieDTO.getBackdrop_path());
+        movie.setOverview(tmdbMovieDTO.getOverview());
+        return movie;
     }
 
     /**
-     * Saves a movie to the database by its TMDb ID. If the movie with the given TMDb ID
-     * already exists in the database, a {@code MediaAlreadyExistsException} is thrown.
-     * This method fetches movie details from TMDb, converts the data into a {@code Movie}
-     * entity, and then persists it to the database.
+     * Saves a movie to the database if it does not already exist.
+     * The movie details are fetched using the TMDb ID provided in the request DTO.
+     * The fetched details are converted into a Movie entity and then saved to the repository.
      *
-     * @param tmdbId the unique ID of the movie from TMDb
-     * @return the saved {@code Movie} entity
-     * @throws MediaAlreadyExistsException if a movie with the provided TMDb ID already exists in the database
+     * @param addUserMediaRequestDTO the DTO containing the TMDb ID of the movie to be saved
      */
-    public Movie saveMovieToDb(Long tmdbId) {
-        if (movieRepository.findByTmdbId(tmdbId).isPresent()) {
-            throw new MediaAlreadyExistsException("Movie already added");
+    public void saveMovieToDb(AddUserMediaRequestDTO addUserMediaRequestDTO) {
+        if (movieRepository.findByTmdbId(addUserMediaRequestDTO.getTmdbId()).isEmpty()) {
+            Movie movie = convertTmdbMovieDtoToMovie(fetchMovieDetails(addUserMediaRequestDTO.getTmdbId()));
+            movieRepository.save(movie);
         }
-
-        Movie movie = convertTmdbMovieDtoToMovie(fetchMovieDetails(tmdbId));
-        return movieRepository.save(movie);
     }
 
     /**

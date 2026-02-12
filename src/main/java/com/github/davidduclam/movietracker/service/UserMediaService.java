@@ -1,7 +1,6 @@
 package com.github.davidduclam.movietracker.service;
 
-import com.github.davidduclam.movietracker.client.tmdb.TmdbClient;
-import com.github.davidduclam.movietracker.controller.UserMediaController;
+import com.github.davidduclam.movietracker.dto.AddUserMediaRequestDTO;
 import com.github.davidduclam.movietracker.dto.TmdbMovieDTO;
 import com.github.davidduclam.movietracker.dto.TmdbTvShowDTO;
 import com.github.davidduclam.movietracker.error.MediaAlreadyExistsException;
@@ -10,8 +9,6 @@ import com.github.davidduclam.movietracker.model.Movie;
 import com.github.davidduclam.movietracker.model.TvShow;
 import com.github.davidduclam.movietracker.model.User;
 import com.github.davidduclam.movietracker.model.UserMedia;
-import com.github.davidduclam.movietracker.repository.MovieRepository;
-import com.github.davidduclam.movietracker.repository.TvShowRepository;
 import com.github.davidduclam.movietracker.repository.UserMediaRepository;
 import com.github.davidduclam.movietracker.repository.UserRepository;
 import org.jspecify.annotations.NonNull;
@@ -22,118 +19,115 @@ import java.util.Optional;
 @Service
 public class UserMediaService {
     private final UserMediaRepository userMediaRepository;
-    private final MovieRepository movieRepository;
-    private final TvShowRepository tvShowRepository;
     private final UserRepository userRepository;
-    private final TmdbClient tmdbClient;
+    private final MovieService movieService;
+    private final TvShowService tvShowService;
 
-    public UserMediaService(UserMediaRepository userMediaRepository, MovieRepository movieRepository, TvShowRepository tvShowRepository, UserRepository userRepository, TmdbClient tmdbClient) {
+    public UserMediaService(UserMediaRepository userMediaRepository, UserRepository userRepository, MovieService movieService, TvShowService tvShowService) {
         this.userMediaRepository = userMediaRepository;
-        this.movieRepository = movieRepository;
-        this.tvShowRepository = tvShowRepository;
         this.userRepository = userRepository;
-        this.tmdbClient = tmdbClient;
+        this.movieService = movieService;
+        this.tvShowService = tvShowService;
     }
 
     // =======================================================
     // Movie helpers
     // =======================================================
 
-    private Movie convertTmdbMovieDtoToMovie(TmdbMovieDTO tmdbMovieDTO) {
-        return getMovie(tmdbMovieDTO);
-    }
-
-    public TmdbMovieDTO fetchMovieDetails(Long tmdbId) {
-        return tmdbClient.fetchMovieDetails(tmdbId);
-    }
-
-    @NonNull
-    static Movie getMovie(TmdbMovieDTO tmdbMovieDTO) {
-        Movie movie = new Movie();
-        movie.setTmdbId(tmdbMovieDTO.getId());
-        movie.setTitle(tmdbMovieDTO.getTitle());
-        movie.setReleaseDate(tmdbMovieDTO.getRelease_date());
-        movie.setPosterPath(tmdbMovieDTO.getPoster_path());
-        movie.setBackdropPath(tmdbMovieDTO.getBackdrop_path());
-        movie.setOverview(tmdbMovieDTO.getOverview());
-        return movie;
-    }
-
-    public UserMedia saveUserMediaMovieToDb(Long userId, Long tmdbdId) {
+    /**
+     * Saves a movie to the user's media list in the database. If the user does not exist,
+     * throws a {@code UserNotFoundException}. If the movie is already in the user's media list,
+     * throws a {@code MediaAlreadyExistsException}.
+     *
+     * @param userId                 the ID of the user to whom the media belongs
+     * @param addUserMediaRequestDTO the data transfer object containing details of the media to be added
+     * @return a {@code UserMedia} object representing the saved media entry
+     * @throws UserNotFoundException       if the user with the specified {@code userId} does not exist
+     * @throws MediaAlreadyExistsException if the movie is already present in the user's media list
+     */
+    public UserMedia saveUserMediaMovieToDb(Long userId, AddUserMediaRequestDTO addUserMediaRequestDTO) {
         Optional<User> user = userRepository.findById(userId);
 
-        if (user.isPresent()) {
-            UserMedia userMedia = new UserMedia();
-            userMedia.setUser(user.get());
-            userMedia.setTmdbId(tmdbdId);
-            userMedia.setWatched(false);
-            userMedia.setPersonalRating(0.0);
-            userMedia.setWatchDate(null);
-            userMedia.setMediaType("movie");
-
-            userMediaRepository.save(userMedia);
-            return userMedia;
+        if (user.isEmpty()) {
+            throw new UserNotFoundException("User not found");
         }
-        throw new UserNotFoundException("User not found");
+
+        if (userMediaRepository.existsByUserIdAndMediaTypeAndTmdbId(userId, addUserMediaRequestDTO.getMediaType(), addUserMediaRequestDTO.getTmdbId())) {
+            throw new MediaAlreadyExistsException("Movie already added");
+        } else {
+            return addUserMediaToDb(user.get(), addUserMediaRequestDTO);
+        }
     }
 
-    public void saveMovieToDb(Long tmdbId) {
-        if (movieRepository.findByTmdbId(tmdbId).isPresent()) {
-            throw new MediaAlreadyExistsException("Media already added");
-        }
-
-        Movie movie = convertTmdbMovieDtoToMovie(fetchMovieDetails(tmdbId));
-         movieRepository.save(movie);
+    /**
+     * Saves a movie to the database after verifying that it doesn't already exist.
+     * If the movie is not found in the database, it fetches the movie details from the external
+     * TMDB API, converts the DTO into a Movie entity, and saves it in the repository.
+     *
+     * @param addUserMediaRequestDTO the data transfer object containing the TMDB ID of the movie
+     *                               and other relevant information
+     */
+    public void saveMovieToDb(AddUserMediaRequestDTO addUserMediaRequestDTO) {
+        movieService.saveMovieToDb(addUserMediaRequestDTO);
     }
 
     // =======================================================
     // TV show helpers
     // =======================================================
 
-    private TvShow convertTmdbTvShowDtoToTvShow(TmdbTvShowDTO tmdbTvShowDTO) {
-        return getTvShow(tmdbTvShowDTO);
-    }
-
-    public TmdbTvShowDTO fetchTvShowDetails(Long tmdbId) {
-        return tmdbClient.fetchTvShowDetails(tmdbId);
-    }
-
-    @NonNull
-    static TvShow getTvShow(TmdbTvShowDTO tmdbTvShowDTO) {
-        TvShow tvShow = new TvShow();
-        tvShow.setTmdbId(tmdbTvShowDTO.getId());
-        tvShow.setTitle(tmdbTvShowDTO.getName());
-        tvShow.setFirstAirDate(tmdbTvShowDTO.getFirst_air_date());
-        tvShow.setPosterPath(tmdbTvShowDTO.getPoster_path());
-        tvShow.setBackdropPath(tmdbTvShowDTO.getBackdrop_path());
-        tvShow.setOverview(tmdbTvShowDTO.getOverview());
-        return tvShow;
-    }
-
-    public UserMedia saveUserMediaTvShowToDb(Long userId, Long tmdbdId) {
+    /**
+     * Saves a TV show to the user's media list in the database. If the user does not exist,
+     * throws a {@code UserNotFoundException}. If the TV show is already in the user's media list,
+     * throws a {@code MediaAlreadyExistsException}.
+     *
+     * @param userId                 the ID of the user to whom the media belongs
+     * @param addUserMediaRequestDTO the data transfer object containing details of the media to be added
+     * @return a {@code UserMedia} object representing the saved media entry
+     * @throws UserNotFoundException       if the user with the specified {@code userId} does not exist
+     * @throws MediaAlreadyExistsException if the TV show is already present in the user's media list
+     */
+    public UserMedia saveUserMediaTvShowToDb(Long userId, AddUserMediaRequestDTO addUserMediaRequestDTO) {
         Optional<User> user = userRepository.findById(userId);
 
-        if (user.isPresent()) {
-            UserMedia userMedia = new UserMedia();
-            userMedia.setUser(user.get());
-            userMedia.setTmdbId(tmdbdId);
-            userMedia.setWatched(false);
-            userMedia.setPersonalRating(0.0);
-            userMedia.setWatchDate(null);
-            userMedia.setMediaType("tv");
-
-            userMediaRepository.save(userMedia);
-            return userMedia;
+        if (user.isEmpty()) {
+            throw new UserNotFoundException("User not found");
         }
-        throw new UserNotFoundException("User not found");
+
+        if (userMediaRepository.existsByUserIdAndMediaTypeAndTmdbId(userId, addUserMediaRequestDTO.getMediaType(), addUserMediaRequestDTO.getTmdbId())) {
+            throw new MediaAlreadyExistsException("TV show already added");
+        } else {
+            return addUserMediaToDb(user.get(), addUserMediaRequestDTO);
+        }
     }
 
-    public void saveTvShowToDb(Long tmdbId) {
-        if (tvShowRepository.findByTmdbId(tmdbId).isPresent()) {
-            throw new MediaAlreadyExistsException("TV show already added");
-        }
+    /**
+     * Saves a TV show to the database if it does not already exist.
+     *
+     * @param addUserMediaRequestDTO the data transfer object containing details
+     *                               related to the TV show, including its TMDB ID
+     */
+    public void saveTvShowToDb(AddUserMediaRequestDTO addUserMediaRequestDTO) {
+        tvShowService.saveTvShowToDb(addUserMediaRequestDTO);
+    }
 
-        TvShow tvShow  = convertTmdbTvShowDtoToTvShow(fetchTvShowDetails(tmdbId));
-        tvShowRepository.save(tvShow);
+    // =======================================================
+    // Internal helpers
+    // =======================================================
+
+    /**
+     * Adds a new UserMedia entity to the database based on the provided user and request DTO.
+     *
+     * @param user The User entity associated with the UserMedia to be added.
+     * @param addUserMediaRequestDTO The data transfer object containing information required to create the UserMedia entity.
+     * @return The UserMedia entity that was saved to the database.
+     */
+    private UserMedia addUserMediaToDb(User user, AddUserMediaRequestDTO addUserMediaRequestDTO) {
+        UserMedia userMedia = new UserMedia();
+        userMedia.setUser(user);
+        userMedia.setTmdbId(addUserMediaRequestDTO.getTmdbId());
+        userMedia.setMediaType(addUserMediaRequestDTO.getMediaType());
+
+        userMediaRepository.save(userMedia);
+        return userMedia;
     }
 }

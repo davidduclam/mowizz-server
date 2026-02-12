@@ -1,5 +1,6 @@
 package com.github.davidduclam.movietracker.controller;
 
+import com.github.davidduclam.movietracker.dto.AddUserMediaRequestDTO;
 import com.github.davidduclam.movietracker.model.UserMedia;
 import com.github.davidduclam.movietracker.service.UserMediaService;
 import org.springframework.web.bind.annotation.*;
@@ -14,16 +15,15 @@ public class UserMediaController {
     }
 
     @PostMapping("/users/{user_id}/movie")
-    public UserMedia saveMovieToDb(@PathVariable Long user_id, @RequestBody Long tmdbId) {
-        userMediaService.saveMovieToDb(tmdbId);
-        return userMediaService.saveUserMediaMovieToDb(user_id, tmdbId);
-
+    public UserMedia saveMovieToDb(@PathVariable Long user_id, @RequestBody AddUserMediaRequestDTO addUserMediaRequestDTO) {
+        userMediaService.saveMovieToDb(addUserMediaRequestDTO);
+        return userMediaService.saveUserMediaMovieToDb(user_id, addUserMediaRequestDTO);
     }
 
     @PostMapping("/users/{user_id}/tvshow")
-    public UserMedia saveTvShowToDb(@PathVariable Long user_id, @RequestBody Long tmdbId) {
-        userMediaService.saveTvShowToDb(tmdbId);
-        return userMediaService.saveUserMediaTvShowToDb(user_id, tmdbId);
+    public UserMedia saveTvShowToDb(@PathVariable Long user_id, @RequestBody AddUserMediaRequestDTO addUserMediaRequestDTO) {
+        userMediaService.saveTvShowToDb(addUserMediaRequestDTO);
+        return userMediaService.saveUserMediaTvShowToDb(user_id, addUserMediaRequestDTO);
 
     }
 }

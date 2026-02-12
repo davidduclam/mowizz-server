@@ -1,15 +1,13 @@
 package com.github.davidduclam.movietracker.service;
 
 import com.github.davidduclam.movietracker.client.tmdb.TmdbClient;
+import com.github.davidduclam.movietracker.dto.AddUserMediaRequestDTO;
 import com.github.davidduclam.movietracker.dto.TmdbTvShowDTO;
-import com.github.davidduclam.movietracker.error.MediaAlreadyExistsException;
 import com.github.davidduclam.movietracker.model.TvShow;
 import com.github.davidduclam.movietracker.repository.TvShowRepository;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-
-import static com.github.davidduclam.movietracker.service.UserMediaService.getTvShow;
 
 @Service
 public class TvShowService {
@@ -22,39 +20,41 @@ public class TvShowService {
     }
 
     /**
-     * Converts a {@code TmdbTvShowDTO} object into a {@code TvShow} object.
+     * Converts a {@code TmdbTvShowDTO} object into a {@code TvShow} entity.
      *
-     * This method maps the properties of the given {@code TmdbTvShowDTO} object
-     * to the corresponding properties of a new {@code TvShow} object.
+     * This method copies relevant attributes from the {@code TmdbTvShowDTO} object
+     * such as TMDB ID, name, first air date, poster path, backdrop path, and overview,
+     * and sets them into a newly created {@code TvShow} entity.
      *
-     * @param tmdbTvShowDTO the {@code TmdbTvShowDTO} object containing the TV show details
-     *                      retrieved from the TMDB API
-     * @return a {@code TvShow} object populated with the mapped properties from the given
-     *         {@code TmdbTvShowDTO}
+     * @param tmdbTvShowDTO the DTO containing details of the TV show retrieved from the TMDB API
+     * @return a {@code TvShow} entity populated with the corresponding values from the {@code TmdbTvShowDTO}
      */
     private TvShow convertTmdbTvShowDtoToTvShow(TmdbTvShowDTO tmdbTvShowDTO) {
-        return getTvShow(tmdbTvShowDTO);
+        TvShow tvShow = new TvShow();
+        tvShow.setTmdbId(tmdbTvShowDTO.getId());
+        tvShow.setTitle(tmdbTvShowDTO.getName());
+        tvShow.setFirstAirDate(tmdbTvShowDTO.getFirst_air_date());
+        tvShow.setPosterPath(tmdbTvShowDTO.getPoster_path());
+        tvShow.setBackdropPath(tmdbTvShowDTO.getBackdrop_path());
+        tvShow.setOverview(tmdbTvShowDTO.getOverview());
+        return tvShow;
     }
 
     /**
-     * Saves a TV show to the database using its TMDB ID.
+     * Saves a TV show to the database if it does not already exist.
      *
-     * This method first checks if a TV show with the specified TMDB ID already exists
-     * in the database. If it does, a {@code MediaAlreadyExistsException} is thrown.
-     * If not, the method fetches the TV show's details from the TMDB API, converts
-     * them into a {@code TvShow} object, and saves the resulting object to the repository.
+     * This method checks if a TV show with the given TMDB ID already exists in the database.
+     * If it does not exist, the method fetches the TV show details from the TMDB API, converts
+     * the details into a {@code TvShow} entity, and saves it to the database.
      *
-     * @param tmdbId the unique identifier of the TV show in the TMDB database
-     * @return the saved {@code TvShow} object
-     * @throws MediaAlreadyExistsException if a TV show with the given TMDB ID already exists in the database
+     * @param addUserMediaRequestDTO a DTO containing the media-related information, including
+     *                               the TMDB ID of the TV show
      */
-    public TvShow saveTvShowToDb(Long tmdbId) {
-        if (tvShowRepository.findByTmdbId(tmdbId).isPresent()) {
-            throw new MediaAlreadyExistsException("TV show already added");
+    public void saveTvShowToDb(AddUserMediaRequestDTO addUserMediaRequestDTO) {
+        if (tvShowRepository.findByTmdbId(addUserMediaRequestDTO.getTmdbId()).isEmpty()) {
+            TvShow tvShow = convertTmdbTvShowDtoToTvShow(fetchTvShowDetails(addUserMediaRequestDTO.getTmdbId()));
+            tvShowRepository.save(tvShow);
         }
-
-        TvShow tvShow = convertTmdbTvShowDtoToTvShow(fetchTvShowDetails(tmdbId));
-        return tvShowRepository.save(tvShow);
     }
 
     /**

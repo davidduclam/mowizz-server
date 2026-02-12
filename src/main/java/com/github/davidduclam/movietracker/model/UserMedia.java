@@ -21,5 +21,8 @@ public class UserMedia {
     private boolean watched = false;
     private Double personalRating;
     private LocalDate watchDate;
-    private String mediaType;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private MediaType mediaType;
 }
