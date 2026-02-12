@@ -1,0 +1,10 @@
+.git
+.github
+.idea
+target
+.DS_Store
+.env
+*.iml
+README.md
+LICENSE
+openapi.yaml
