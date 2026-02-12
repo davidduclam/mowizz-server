@@ -5,6 +5,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
@@ -49,5 +50,15 @@ public class GlobalExceptionHandler {
         return ResponseEntity
                 .status(HttpStatus.CONFLICT)
                 .body(new ErrorResponse("CONSTRAINT_VIOLATION", "Duplicate or invalid data"));
+    }
+
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    public ResponseEntity<ErrorResponse> handleValidation(MethodArgumentNotValidException ex) {
+        String msg = ex.getBindingResult().getFieldErrors().stream()
+                .findFirst()
+                .map(e -> e.getField() + ": " + e.getDefaultMessage())
+                .orElse("Invalid request body");
+        return ResponseEntity.badRequest()
+                .body(new ErrorResponse("VALIDATION_ERROR", msg));
     }
 }
