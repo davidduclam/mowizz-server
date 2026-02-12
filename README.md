@@ -127,6 +127,57 @@ http://localhost:8080
 
 Flyway migrations run on startup, and Hibernate is configured with `ddl-auto=validate`.
 
+## Run With Docker
+
+### Prerequisite
+
+- Docker Desktop (or Docker Engine + Compose)
+
+### Start App + Postgres
+
+Set your TMDB token and start both services:
+
+```bash
+export TMDB_ACCESS_TOKEN=your_tmdb_access_token
+docker compose up --build
+```
+
+Run in background (detached mode):
+
+```bash
+docker compose up --build -d
+```
+
+### Smoke Test
+
+In a separate terminal:
+
+```bash
+curl -i http://localhost:8080/users
+```
+
+Expected: `HTTP/1.1 200` and usually `[]` on a fresh DB.
+
+To verify TMDB integration specifically:
+
+```bash
+curl -i "http://localhost:8080/movies/popular"
+```
+
+### Stop / Cleanup
+
+Stop containers but keep database data:
+
+```bash
+docker compose down
+```
+
+Stop containers and remove database volume (`pgdata`):
+
+```bash
+docker compose down -v
+```
+
 ## Build and Test
 
 ```bash
