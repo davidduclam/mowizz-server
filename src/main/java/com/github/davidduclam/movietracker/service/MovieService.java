@@ -2,7 +2,8 @@ package com.github.davidduclam.movietracker.service;
 
 import com.github.davidduclam.movietracker.client.tmdb.TmdbClient;
 import com.github.davidduclam.movietracker.dto.AddUserMediaRequestDTO;
-import com.github.davidduclam.movietracker.dto.TmdbMovieDTO;
+import com.github.davidduclam.movietracker.client.tmdb.dto.TmdbMovieDTO;
+import com.github.davidduclam.movietracker.dto.MovieResponseDTO;
 import com.github.davidduclam.movietracker.model.Movie;
 import com.github.davidduclam.movietracker.repository.MovieRepository;
 import org.springframework.stereotype.Service;
@@ -20,76 +21,107 @@ public class MovieService {
     }
 
     /**
-     * Converts a TmdbMovieDTO object to a Movie entity.
+     * Converts a MovieResponseDTO object containing movie details fetched from TMDb into a Movie entity.
+     * This method maps the fields from the DTO to the corresponding fields in the Movie entity.
      *
-     * @param tmdbMovieDTO the DTO containing movie details from TMDb
-     * @return the converted Movie entity
+     * @param movieResponseDTO the MovieResponseDTO object containing details about a movie,
+     *                         such as its ID, title, release date, poster path, backdrop path, and overview.
+     * @return a Movie entity populated with data from the provided MovieResponseDTO.
      */
-    private Movie convertTmdbMovieDtoToMovie(TmdbMovieDTO tmdbMovieDTO) {
+    private Movie convertMovieResponseDtoToMovie(MovieResponseDTO movieResponseDTO) {
         Movie movie = new Movie();
-        movie.setTmdbId(tmdbMovieDTO.getId());
-        movie.setTitle(tmdbMovieDTO.getTitle());
-        movie.setReleaseDate(tmdbMovieDTO.getRelease_date());
-        movie.setPosterPath(tmdbMovieDTO.getPoster_path());
-        movie.setBackdropPath(tmdbMovieDTO.getBackdrop_path());
-        movie.setOverview(tmdbMovieDTO.getOverview());
+        movie.setTmdbId(movieResponseDTO.id());
+        movie.setTitle(movieResponseDTO.title());
+        movie.setReleaseDate(movieResponseDTO.releaseDate());
+        movie.setPosterPath(movieResponseDTO.posterPath());
+        movie.setBackdropPath(movieResponseDTO.backdropPath());
+        movie.setOverview(movieResponseDTO.overview());
         return movie;
     }
 
     /**
      * Saves a movie to the database if it does not already exist.
-     * The movie details are fetched using the TMDb ID provided in the request DTO.
-     * The fetched details are converted into a Movie entity and then saved to the repository.
+     * This method checks if a movie with the provided TMDb ID is already present in the repository.
+     * If not, it fetches the movie details from TMDb, converts the details to a Movie entity,
+     * and saves it to the database.
      *
-     * @param addUserMediaRequestDTO the DTO containing the TMDb ID of the movie to be saved
+     * @param addUserMediaRequestDTO the data transfer object containing information about the movie to be added,
+     *                               including the TMDb ID required to fetch the movie details.
      */
     public void saveMovieToDb(AddUserMediaRequestDTO addUserMediaRequestDTO) {
-        if (movieRepository.findByTmdbId(addUserMediaRequestDTO.getTmdbId()).isEmpty()) {
-            Movie movie = convertTmdbMovieDtoToMovie(fetchMovieDetails(addUserMediaRequestDTO.getTmdbId()));
+        if (movieRepository.findByTmdbId(addUserMediaRequestDTO.tmdbId()).isEmpty()) {
+            Movie movie = convertMovieResponseDtoToMovie(fetchMovieDetails(addUserMediaRequestDTO.tmdbId()));
             movieRepository.save(movie);
         }
     }
 
     /**
-     * Uses TmdbClient to search for a movie
-     * @param query the keyword
-     * @return the list of movies
+     * Fetches movie details from TMDb using the provided TMDb ID and returns a MovieResponseDTO object
+     * containing the movie's information.
+     *
+     * @param tmdbId the ID of the movie from TMDb
+     * @return a MovieResponseDTO object containing the movie's details, including its ID, title, release date,
+     *         poster path, backdrop path, overview, and vote average
      */
-    public List<TmdbMovieDTO> searchMovie(String query) {
-        return tmdbClient.searchMovies(query);
+    public MovieResponseDTO fetchMovieDetails(Long tmdbId) {
+        TmdbMovieDTO tmdbMovieDTO = tmdbClient.fetchMovieDetails(tmdbId);
+        return toMovieResponse(tmdbMovieDTO);
     }
 
     /**
-     * Uses TmdbClient to fetch movie details
-     * @param tmdbId the movie id
-     * @return the movie details
+     * Retrieves a list of popular movies from TMDb and converts the results
+     * into a list of MovieResponseDTO objects.
+     *
+     * @return a list of MovieResponseDTO objects representing the popular movies,
+     *         including their ID, title, release date, poster path, backdrop path,
+     *         overview, and vote average.
      */
-    public TmdbMovieDTO fetchMovieDetails(Long tmdbId) {
-        return tmdbClient.fetchMovieDetails(tmdbId);
+    public List<MovieResponseDTO> popularMovies() {
+        List<TmdbMovieDTO> tmdbMovieDTOList = tmdbClient.popularMovies();
+        return tmdbMovieDTOList.stream().map(this::toMovieResponse).toList();
     }
 
     /**
-     * Uses TmdbClient to fetch the most popular movies
-     * @return the list of popular movies
+     * Retrieves a list of top-rated movies from TMDb and converts the results
+     * into a list of MovieResponseDTO objects.
+     *
+     * @return a list of MovieResponseDTO objects representing the top-rated movies,
+     *         including their ID, title, release date, poster path, backdrop path,
+     *         overview, and vote average.
      */
-    public List<TmdbMovieDTO> popularMovies() {
-        return tmdbClient.popularMovies();
+    public List<MovieResponseDTO> topRatedMovies() {
+        List<TmdbMovieDTO> tmdbMovieDTOList = tmdbClient.topRatedMovies();
+        return tmdbMovieDTOList.stream().map(this::toMovieResponse).toList();
     }
 
     /**
-     * Uses TmdbClient to fetch the top-rated movies
-     * @return the list of top-rated movies
+     * Fetches a list of upcoming movies using the TmdbClient and converts the results
+     * into a list of MovieResponseDTO objects.
+     *
+     * @return a list of MovieResponseDTO objects containing details of upcoming movies,
+     *         such as their ID, title, release date, poster path, backdrop path,
+     *         overview, and vote average
      */
-    public List<TmdbMovieDTO> topRatedMovies() {
-        return tmdbClient.topRatedMovies();
+    public List<MovieResponseDTO> upcomingMovies() {
+        List<TmdbMovieDTO> tmdbMovieDTOList = tmdbClient.upcomingMovies();
+        return tmdbMovieDTOList.stream().map(this::toMovieResponse).toList();
     }
 
     /**
-     * Uses TmdbClient to fetch upcoming movies
-     * @return the list of upcoming movies
+     * Converts a TmdbMovieDTO object into a MovieResponseDTO object.
+     *
+     * @param tmdbMovieDTO the DTO containing movie details retrieved from TMDb
+     * @return a MovieResponseDTO object containing the movie's details, including its ID, title, release date,
+     *         poster path, backdrop path, overview, and vote average
      */
-    public List<TmdbMovieDTO> upcomingMovies() {
-        return tmdbClient.upcomingMovies();
+    private MovieResponseDTO toMovieResponse(TmdbMovieDTO tmdbMovieDTO) {
+        return new MovieResponseDTO(
+                tmdbMovieDTO.id(),
+                tmdbMovieDTO.title(),
+                tmdbMovieDTO.overview(),
+                tmdbMovieDTO.release_date(),
+                tmdbMovieDTO.poster_path(),
+                tmdbMovieDTO.backdrop_path(),
+                tmdbMovieDTO.vote_average());
     }
-
 }
