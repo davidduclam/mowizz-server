@@ -187,7 +187,6 @@ docker compose down -v
 ## API Endpoints
 
 ### Movies (`/movies`)
-- `GET /movies/search?query=...`
 - `GET /movies/{tmdbId}`
 - `GET /movies/popular`
 - `GET /movies/top-rated`
@@ -209,7 +208,7 @@ docker compose down -v
 
 ### User Media
 - `POST /users/{user_id}/media`
-  request body example: `{ "tmdbId": 12345, "mediaType": "movie" }`
+  request body example: `{ "tmdbId": 12345, "mediaType": "MOVIE" }`
 
 ## OpenAPI
 
