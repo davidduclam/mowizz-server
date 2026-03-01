@@ -1,6 +1,6 @@
 package com.github.davidduclam.movietracker.controller;
 
-import com.github.davidduclam.movietracker.dto.TmdbMovieDTO;
+import com.github.davidduclam.movietracker.dto.MovieResponseDTO;
 import com.github.davidduclam.movietracker.service.MovieService;
 import org.springframework.web.bind.annotation.*;
 
@@ -15,28 +15,23 @@ public class MovieController {
         this.movieService = movieService;
     }
 
-    @GetMapping("/search")
-    public List<TmdbMovieDTO> search(@RequestParam String query) {
-        return movieService.searchMovie(query);
-    }
-
     @GetMapping("/{tmdbId}")
-    public TmdbMovieDTO fetchMovieDetails(@PathVariable Long tmdbId) {
+    public MovieResponseDTO fetchMovieDetails(@PathVariable Long tmdbId) {
         return movieService.fetchMovieDetails(tmdbId);
     }
 
     @GetMapping("/popular")
-    public List<TmdbMovieDTO> popularMovies() {
+    public List<MovieResponseDTO> popularMovies() {
         return movieService.popularMovies();
     }
 
     @GetMapping("/top-rated")
-    public List<TmdbMovieDTO> topRatedMovies() {
+    public List<MovieResponseDTO> topRatedMovies() {
         return movieService.topRatedMovies();
     }
 
     @GetMapping("/upcoming")
-    public List<TmdbMovieDTO> upcomingMovies() {
+    public List<MovieResponseDTO> upcomingMovies() {
         return movieService.upcomingMovies();
     }
 }

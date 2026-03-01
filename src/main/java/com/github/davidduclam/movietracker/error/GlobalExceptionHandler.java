@@ -25,28 +25,28 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(MediaAlreadyExistsException.class)
-    public ResponseEntity<ErrorResponse> handleMediaAlreadyExists(MediaAlreadyExistsException exception) {
+    public ResponseEntity<ErrorResponse> handleMediaAlreadyExists() {
         return ResponseEntity
                 .status(HttpStatus.CONFLICT)
-                .body(new ErrorResponse("MEDIA_ALREADY_EXISTS", exception.getMessage()));
+                .body(new ErrorResponse("MEDIA_ALREADY_EXISTS", "Media already exists"));
     }
 
     @ExceptionHandler(UserNotFoundException.class)
-    public ResponseEntity<ErrorResponse> handleUserNotFound(UserNotFoundException exception) {
+    public ResponseEntity<ErrorResponse> handleUserNotFound() {
         return ResponseEntity
                 .status(HttpStatus.NOT_FOUND)
-                .body(new ErrorResponse("USER_NOT_FOUND", exception.getMessage()));
+                .body(new ErrorResponse("USER_NOT_FOUND", "User not found"));
     }
 
     @ExceptionHandler(HttpMessageNotReadableException.class)
-    public ResponseEntity<ErrorResponse> handleMessageNotReadable(HttpMessageNotReadableException exception) {
+    public ResponseEntity<ErrorResponse> handleMessageNotReadable() {
         return ResponseEntity
                 .status(HttpStatus.BAD_REQUEST)
                 .body(new ErrorResponse("INVALID_REQUEST_BODY", "Malformed JSON or invalid field value in request body"));
     }
 
     @ExceptionHandler(DataIntegrityViolationException.class)
-    public ResponseEntity<ErrorResponse> handleDataIntegrity(DataIntegrityViolationException exception) {
+    public ResponseEntity<ErrorResponse> handleDataIntegrity() {
         return ResponseEntity
                 .status(HttpStatus.CONFLICT)
                 .body(new ErrorResponse("CONSTRAINT_VIOLATION", "Duplicate or invalid data"));

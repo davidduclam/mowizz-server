@@ -1,6 +1,6 @@
 package com.github.davidduclam.movietracker.controller;
 
-import com.github.davidduclam.movietracker.client.tmdb.dto.TmdbSearchResultDTO;
+import com.github.davidduclam.movietracker.dto.SearchResultDTO;
 import com.github.davidduclam.movietracker.service.SearchService;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -19,8 +19,7 @@ public class SearchController {
     }
 
     @GetMapping("/multi")
-    public List<TmdbSearchResultDTO> searchMulti(@RequestParam String query) {
+    public List<SearchResultDTO> searchMulti(@RequestParam String query) {
         return searchService.searchMulti(query);
     }
-
 }

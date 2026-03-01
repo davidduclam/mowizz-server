@@ -1,5 +1,6 @@
 package com.github.davidduclam.movietracker.controller;
 
+import com.github.davidduclam.movietracker.error.UserNotFoundException;
 import com.github.davidduclam.movietracker.model.Movie;
 import com.github.davidduclam.movietracker.model.User;
 import com.github.davidduclam.movietracker.service.UserService;
@@ -29,7 +30,7 @@ public class UserController {
 
     @GetMapping("/{id}")
     public ResponseEntity<User> getUserById(@PathVariable Long id) {
-        return userService.getUserById(id).map(ResponseEntity::ok).orElse(ResponseEntity.notFound().build());
+        return userService.getUserById(id).map(ResponseEntity::ok).orElseThrow(() -> new UserNotFoundException(""));
     }
 
     @DeleteMapping("/{id}")
