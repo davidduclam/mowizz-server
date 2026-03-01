@@ -4,10 +4,10 @@ import com.github.davidduclam.movietracker.client.tmdb.dto.TmdbMultiSearchRespon
 import com.github.davidduclam.movietracker.client.tmdb.dto.TmdbMovieResultDTO;
 import com.github.davidduclam.movietracker.client.tmdb.dto.TmdbSearchResultDTO;
 import com.github.davidduclam.movietracker.client.tmdb.dto.TmdbTvShowResultDTO;
-import com.github.davidduclam.movietracker.dto.TmdbMovieDTO;
-import com.github.davidduclam.movietracker.dto.TmdbSearchMovieResponseDTO;
-import com.github.davidduclam.movietracker.dto.TmdbSearchTvShowResponseDTO;
-import com.github.davidduclam.movietracker.dto.TmdbTvShowDTO;
+import com.github.davidduclam.movietracker.client.tmdb.dto.TmdbMovieDTO;
+import com.github.davidduclam.movietracker.client.tmdb.dto.TmdbSearchMovieResponseDTO;
+import com.github.davidduclam.movietracker.client.tmdb.dto.TmdbSearchTvShowResponseDTO;
+import com.github.davidduclam.movietracker.client.tmdb.dto.TmdbTvShowDTO;
 import com.github.davidduclam.movietracker.error.TmdbClientException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -70,30 +70,6 @@ public class TmdbClient {
     // =======================================================
 
     /**
-     * Search a movie from TMDB based on a keyword
-     *
-     * @param query the keyword to be searched for
-     * @return the list of movies
-     * @throws TmdbClientException if an error occurs while searching for movies
-     */
-    public List<TmdbMovieDTO> searchMovies(String query) {
-        TmdbSearchMovieResponseDTO response = execute("search movies", () -> restClient.get()
-                .uri(uriBuilder -> uriBuilder
-                        .path("/search/movie")
-                        .queryParam("query", query)
-                        .queryParam("language", "en-US")
-                        .build())
-                .retrieve()
-                .body(TmdbSearchMovieResponseDTO.class));
-
-        if (response == null) {
-            throw new TmdbClientException("TMDB returned an empty response for search");
-        }
-        logger.info("Found {} movies for query {}", response.getTotal_results(), query);
-        return response.getResults();
-    }
-
-    /**
      * Fetch the details of a specific movie
      *
      * @param tmdbId the ID of the movie from TMDB
@@ -125,7 +101,7 @@ public class TmdbClient {
         if (response == null) {
             throw new TmdbClientException("TMDB returned an empty response for popular movies");
         }
-        return response.getResults();
+        return response.results();
     }
 
     /**
@@ -142,7 +118,7 @@ public class TmdbClient {
         if (response == null) {
             throw new TmdbClientException("TMDB returned an empty response for top-rated movies");
         }
-        return response.getResults();
+        return response.results();
     }
 
     /**
@@ -159,7 +135,7 @@ public class TmdbClient {
         if (response == null) {
             throw new TmdbClientException("TMDB returned an empty response for upcoming movies");
         }
-        return response.getResults();
+        return response.results();
     }
 
     // =======================================================
@@ -203,7 +179,7 @@ public class TmdbClient {
         if (response == null) {
             throw new TmdbClientException("TMDB returned an empty response for popular tv shows");
         }
-        return response.getResults();
+        return response.results();
     }
 
     /**
@@ -224,7 +200,7 @@ public class TmdbClient {
         if (response == null) {
             throw new TmdbClientException("TMDB returned an empty response for top rated tv shows");
         }
-        return response.getResults();
+        return response.results();
     }
 
 
