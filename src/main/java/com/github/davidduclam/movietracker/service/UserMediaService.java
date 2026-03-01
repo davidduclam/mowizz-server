@@ -46,7 +46,7 @@ public class UserMediaService {
 
         saveMediaToMovieOrTvShowDb(addUserMediaRequestDTO);
 
-        if (userMediaRepository.existsByUserIdAndMediaTypeAndTmdbId(userId, addUserMediaRequestDTO.getMediaType(), addUserMediaRequestDTO.getTmdbId())) {
+        if (userMediaRepository.existsByUserIdAndMediaTypeAndTmdbId(userId, addUserMediaRequestDTO.mediaType(), addUserMediaRequestDTO.tmdbId())) {
             throw new MediaAlreadyExistsException("Media already added");
         }
 
@@ -75,11 +75,11 @@ public class UserMediaService {
      * @throws IllegalArgumentException if the {@code mediaType} field in the request DTO is null
      */
     private void saveMediaToMovieOrTvShowDb(AddUserMediaRequestDTO addUserMediaRequestDTO) {
-        if (addUserMediaRequestDTO.getMediaType() == null) {
+        if (addUserMediaRequestDTO.mediaType() == null) {
             throw new IllegalArgumentException("mediaType is required");
         }
 
-        if (addUserMediaRequestDTO.getMediaType() == MediaType.MOVIE) {
+        if (addUserMediaRequestDTO.mediaType() == MediaType.MOVIE) {
             movieService.saveMovieToDb(addUserMediaRequestDTO);
         } else {
             tvShowService.saveTvShowToDb(addUserMediaRequestDTO);
@@ -96,8 +96,8 @@ public class UserMediaService {
     private UserMedia addUserMediaToDb(User user, AddUserMediaRequestDTO addUserMediaRequestDTO) {
         UserMedia userMedia = new UserMedia();
         userMedia.setUser(user);
-        userMedia.setTmdbId(addUserMediaRequestDTO.getTmdbId());
-        userMedia.setMediaType(addUserMediaRequestDTO.getMediaType());
+        userMedia.setTmdbId(addUserMediaRequestDTO.tmdbId());
+        userMedia.setMediaType(addUserMediaRequestDTO.mediaType());
 
         userMediaRepository.save(userMedia);
         return userMedia;

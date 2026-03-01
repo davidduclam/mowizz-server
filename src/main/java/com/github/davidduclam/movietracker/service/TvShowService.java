@@ -2,7 +2,8 @@ package com.github.davidduclam.movietracker.service;
 
 import com.github.davidduclam.movietracker.client.tmdb.TmdbClient;
 import com.github.davidduclam.movietracker.dto.AddUserMediaRequestDTO;
-import com.github.davidduclam.movietracker.dto.TmdbTvShowDTO;
+import com.github.davidduclam.movietracker.client.tmdb.dto.TmdbTvShowDTO;
+import com.github.davidduclam.movietracker.dto.TvShowResponseDTO;
 import com.github.davidduclam.movietracker.model.TvShow;
 import com.github.davidduclam.movietracker.repository.TvShowRepository;
 import org.springframework.stereotype.Service;
@@ -20,79 +21,111 @@ public class TvShowService {
     }
 
     /**
-     * Converts a {@code TmdbTvShowDTO} object into a {@code TvShow} entity.
+     * Converts a {@code TvShowResponseDTO} object into a {@code TvShow} entity.
      *
-     * This method copies relevant attributes from the {@code TmdbTvShowDTO} object
-     * such as TMDB ID, name, first air date, poster path, backdrop path, and overview,
-     * and sets them into a newly created {@code TvShow} entity.
+     * This method maps the attributes from the given {@code TvShowResponseDTO},
+     * such as TMDB ID, title, overview, first air date, poster path, and backdrop path,
+     * into a new instance of the {@code TvShow} model.
      *
-     * @param tmdbTvShowDTO the DTO containing details of the TV show retrieved from the TMDB API
-     * @return a {@code TvShow} entity populated with the corresponding values from the {@code TmdbTvShowDTO}
+     * @param tvShowResponseDTO the DTO containing TV show details retrieved from an external API
+     * @return a {@code TvShow} entity populated with the corresponding values from the {@code TvShowResponseDTO}
      */
-    private TvShow convertTmdbTvShowDtoToTvShow(TmdbTvShowDTO tmdbTvShowDTO) {
+    private TvShow convertTvShowResponseDtoToTvShow(TvShowResponseDTO tvShowResponseDTO) {
         TvShow tvShow = new TvShow();
-        tvShow.setTmdbId(tmdbTvShowDTO.getId());
-        tvShow.setTitle(tmdbTvShowDTO.getName());
-        tvShow.setFirstAirDate(tmdbTvShowDTO.getFirst_air_date());
-        tvShow.setPosterPath(tmdbTvShowDTO.getPoster_path());
-        tvShow.setBackdropPath(tmdbTvShowDTO.getBackdrop_path());
-        tvShow.setOverview(tmdbTvShowDTO.getOverview());
+        tvShow.setTmdbId(tvShowResponseDTO.id());
+        tvShow.setTitle(tvShowResponseDTO.name());
+        tvShow.setOverview(tvShowResponseDTO.overview());
+        tvShow.setFirstAirDate(tvShowResponseDTO.firstAirDate());
+        tvShow.setPosterPath(tvShowResponseDTO.posterPath());
+        tvShow.setBackdropPath(tvShowResponseDTO.backdropPath());
         return tvShow;
     }
 
     /**
      * Saves a TV show to the database if it does not already exist.
      *
-     * This method checks if a TV show with the given TMDB ID already exists in the database.
-     * If it does not exist, the method fetches the TV show details from the TMDB API, converts
-     * the details into a {@code TvShow} entity, and saves it to the database.
+     * This method checks if a TV show with the given TMDB ID exists
+     * in the database. If it does not, it fetches the TV show details
+     * from an external API, converts the fetched data into a {@code TvShow}
+     * entity, and saves it to the repository.
      *
-     * @param addUserMediaRequestDTO a DTO containing the media-related information, including
-     *                               the TMDB ID of the TV show
+     * @param addUserMediaRequestDTO the DTO containing the TMDB ID of the
+     *                                TV show to be saved
      */
     public void saveTvShowToDb(AddUserMediaRequestDTO addUserMediaRequestDTO) {
-        if (tvShowRepository.findByTmdbId(addUserMediaRequestDTO.getTmdbId()).isEmpty()) {
-            TvShow tvShow = convertTmdbTvShowDtoToTvShow(fetchTvShowDetails(addUserMediaRequestDTO.getTmdbId()));
+        if (tvShowRepository.findByTmdbId(addUserMediaRequestDTO.tmdbId()).isEmpty()) {
+            TvShow tvShow = convertTvShowResponseDtoToTvShow(fetchTvShowDetails(addUserMediaRequestDTO.tmdbId()));
             tvShowRepository.save(tvShow);
         }
     }
 
     /**
-     * Fetches the details of a specific TV show by its TMDB ID.
+     * Fetches detailed information about a TV show from the TMDB API.
      *
-     * This method interacts with the TMDB client to retrieve detailed information
-     * about a TV show, such as its name, description, air date, and ratings.
+     * This method interacts with the TMDB client to retrieve details
+     * of a TV show corresponding to the given TMDB ID. The fetched details
+     * are then transformed into a {@code TvShowResponseDTO} object.
      *
-     * @param tmdbId the unique identifier of the TV show in the TMDB database
-     * @return a {@code TmdbTvShowDTO} object containing the details of the requested TV show
+     * @param tmdbId the TMDB ID of the TV show to fetch details for
+     * @return a {@code TvShowResponseDTO} containing detailed information
+     *         about the specified TV show
      */
-    public TmdbTvShowDTO fetchTvShowDetails(Long tmdbId) {
-        return tmdbClient.fetchTvShowDetails(tmdbId);
+    public TvShowResponseDTO fetchTvShowDetails(Long tmdbId) {
+        TmdbTvShowDTO tmdbTvShowDTO = tmdbClient.fetchTvShowDetails(tmdbId);
+        return toTvShowResponse(tmdbTvShowDTO);
     }
 
     /**
      * Retrieves a list of popular TV shows from the TMDB API.
      *
-     * This method interacts with the TMDB client to fetch the current list
-     * of TV shows that are trending or popular based on the API's criteria.
+     * This method interacts with the TMDB client to fetch the current list of TV shows
+     * that are considered popular based on the API's criteria. The fetched data is
+     * transformed into a list of {@code TvShowResponseDTO} objects.
      *
-     * @return a list of {@code TmdbTvShowDTO} objects representing the popular TV shows.
+     * @return a list of {@code TvShowResponseDTO} objects representing popular TV shows.
      *         The returned list may be empty if no popular TV shows are found.
      */
-    public List<TmdbTvShowDTO> popularTvShows() {
-        return tmdbClient.popularTvShows();
+    public List<TvShowResponseDTO> popularTvShows() {
+        List<TmdbTvShowDTO> tmdbTvShowDTOList = tmdbClient.popularTvShows();
+        return tmdbTvShowDTOList.stream().map(this::toTvShowResponse).toList();
     }
 
     /**
      * Retrieves a list of top-rated TV shows from the TMDB API.
      *
      * This method interacts with the TMDB client to fetch the current list
-     * of TV shows that are highly rated based on the criteria established by TMDB.
+     * of TV shows that are highly rated based on the API's criteria. The
+     * method then converts the results into a list of {@code TvShowResponseDTO}
+     * objects.
      *
-     * @return a list of {@code TmdbTvShowDTO} objects representing the top-rated TV shows.
+     * @return a list of {@code TvShowResponseDTO} objects representing the top-rated TV shows.
      *         The returned list may be empty if no top-rated TV shows are found.
      */
-    public List<TmdbTvShowDTO> topRatedTvShows() {
-        return tmdbClient.topRatedTvShows();
+    public List<TvShowResponseDTO> topRatedTvShows() {
+        List<TmdbTvShowDTO> tmdbTvShowDTOList = tmdbClient.topRatedTvShows();
+        return tmdbTvShowDTOList.stream().map(this::toTvShowResponse).toList();
+    }
+
+
+    /**
+     * Converts a {@code TmdbTvShowDTO} object into a {@code TvShowResponseDTO}.
+     *
+     * This method maps the attributes from the {@code TmdbTvShowDTO} object, such
+     * as ID, name, overview, first air date, poster path, backdrop path, and vote
+     * average, to a new {@code TvShowResponseDTO} instance.
+     *
+     * @param tmdbTvShowDTO the DTO containing the TV show details fetched from the TMDB API
+     * @return a {@code TvShowResponseDTO} populated with the corresponding values
+     *         from the {@code TmdbTvShowDTO}
+     */
+    private TvShowResponseDTO toTvShowResponse(TmdbTvShowDTO tmdbTvShowDTO) {
+        return new TvShowResponseDTO(
+                tmdbTvShowDTO.id(),
+                tmdbTvShowDTO.name(),
+                tmdbTvShowDTO.overview(),
+                tmdbTvShowDTO.first_air_date(),
+                tmdbTvShowDTO.poster_path(),
+                tmdbTvShowDTO.backdrop_path(),
+                tmdbTvShowDTO.vote_average());
     }
 }
