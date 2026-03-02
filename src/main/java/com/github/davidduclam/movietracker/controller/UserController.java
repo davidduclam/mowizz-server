@@ -30,7 +30,7 @@ public class UserController {
 
     @GetMapping("/{id}")
     public ResponseEntity<User> getUserById(@PathVariable Long id) {
-        return userService.getUserById(id).map(ResponseEntity::ok).orElseThrow(() -> new UserNotFoundException(""));
+        return userService.getUserById(id).map(ResponseEntity::ok).orElseThrow(UserNotFoundException::new);
     }
 
     @DeleteMapping("/{id}")
