@@ -3,7 +3,9 @@ package com.github.davidduclam.movietracker.service;
 import com.github.davidduclam.movietracker.client.tmdb.TmdbClient;
 import com.github.davidduclam.movietracker.dto.AddUserMediaRequestDTO;
 import com.github.davidduclam.movietracker.client.tmdb.dto.TmdbTvShowDTO;
+import com.github.davidduclam.movietracker.dto.MovieResponseDTO;
 import com.github.davidduclam.movietracker.dto.TvShowResponseDTO;
+import com.github.davidduclam.movietracker.error.MediaNotFoundException;
 import com.github.davidduclam.movietracker.model.TvShow;
 import com.github.davidduclam.movietracker.repository.TvShowRepository;
 import org.springframework.stereotype.Service;
@@ -38,6 +40,7 @@ public class TvShowService {
         tvShow.setFirstAirDate(tvShowResponseDTO.firstAirDate());
         tvShow.setPosterPath(tvShowResponseDTO.posterPath());
         tvShow.setBackdropPath(tvShowResponseDTO.backdropPath());
+        tvShow.setVoteAverage(tvShowResponseDTO.voteAverage());
         return tvShow;
     }
 
@@ -57,6 +60,26 @@ public class TvShowService {
             TvShow tvShow = convertTvShowResponseDtoToTvShow(fetchTvShowDetails(addUserMediaRequestDTO.tmdbId()));
             tvShowRepository.save(tvShow);
         }
+    }
+
+    /**
+     * Retrieves a TV show from the database based on the provided TMDB ID.
+     *
+     * This method queries the database for a TV show associated with the given TMDB ID.
+     * If a matching TV show is found, its details are mapped to a {@code TvShowResponseDTO}
+     * and returned. If no matching TV show is found, a {@code MediaNotFoundException} is thrown.
+     *
+     * @param tmdbId the TMDB ID of the TV show to be retrieved
+     * @return a {@code TvShowResponseDTO} containing the details of the retrieved TV show
+     * @throws MediaNotFoundException if no TV show with the provided TMDB ID is found in the database
+     */
+    public TvShowResponseDTO getTvShowFromDb(Long tmdbId) {
+        return tvShowRepository.findByTmdbId(tmdbId)
+                .map(tvShow -> new TvShowResponseDTO(
+                        tvShow.getTmdbId(), tvShow.getTitle(), tvShow.getOverview(),
+                        tvShow.getFirstAirDate(), tvShow.getPosterPath(),
+                        tvShow.getBackdropPath(), tvShow.getVoteAverage()))
+                .orElseThrow(MediaNotFoundException::new);
     }
 
     /**

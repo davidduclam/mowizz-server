@@ -19,4 +19,5 @@ public class Movie {
     private String posterPath;
     private String backdropPath;
     private String overview;
+    private Double voteAverage;
 }
