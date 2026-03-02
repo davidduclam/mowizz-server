@@ -1,7 +1,7 @@
 openapi: 3.0.3
 info:
   title: MoWizz API
-  version: 1.2.0
+  version: 1.3.0
   description: OpenAPI documentation for current MoWizz server endpoints.
 servers:
   - url: http://localhost:8080
@@ -247,6 +247,56 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/UserMedia"
+        "404":
+          description: User not found
+        "409":
+          description: Media already in user's watchlist
+    get:
+      tags: [User Media]
+      operationId: getMediaForUser
+      summary: Get all watchlist items for a user
+      parameters:
+        - in: path
+          name: user_id
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        "200":
+          description: Watchlist items
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/WatchlistItem"
+        "404":
+          description: User not found
+
+  /users/{user_id}/media/{media_id}:
+    delete:
+      tags: [User Media]
+      operationId: deleteMediaForUser
+      summary: Remove a watchlist item for a user
+      parameters:
+        - in: path
+          name: user_id
+          required: true
+          schema:
+            type: integer
+            format: int64
+        - in: path
+          name: media_id
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        "200":
+          description: Media removed
+        "404":
+          description: User or media not found
 
 components:
   schemas:
@@ -398,6 +448,84 @@ components:
           format: date
           nullable: true
         posterPath:
+          type: string
+          nullable: true
+        voteAverage:
+          type: number
+          format: double
+
+    WatchlistItem:
+      oneOf:
+        - $ref: "#/components/schemas/MovieWatchlistItem"
+        - $ref: "#/components/schemas/TvShowWatchlistItem"
+      discriminator:
+        propertyName: mediaType
+        mapping:
+          MOVIE: "#/components/schemas/MovieWatchlistItem"
+          TV: "#/components/schemas/TvShowWatchlistItem"
+
+    MovieWatchlistItem:
+      type: object
+      required:
+        - userMediaId
+        - id
+        - mediaType
+      properties:
+        userMediaId:
+          type: integer
+          format: int64
+        id:
+          type: integer
+          format: int64
+        mediaType:
+          type: string
+          enum: [MOVIE]
+        title:
+          type: string
+        overview:
+          type: string
+        releaseDate:
+          type: string
+          format: date
+          nullable: true
+        posterPath:
+          type: string
+          nullable: true
+        backdropPath:
+          type: string
+          nullable: true
+        voteAverage:
+          type: number
+          format: double
+
+    TvShowWatchlistItem:
+      type: object
+      required:
+        - userMediaId
+        - id
+        - mediaType
+      properties:
+        userMediaId:
+          type: integer
+          format: int64
+        id:
+          type: integer
+          format: int64
+        mediaType:
+          type: string
+          enum: [TV]
+        name:
+          type: string
+        overview:
+          type: string
+        firstAirDate:
+          type: string
+          format: date
+          nullable: true
+        posterPath:
+          type: string
+          nullable: true
+        backdropPath:
           type: string
           nullable: true
         voteAverage:
