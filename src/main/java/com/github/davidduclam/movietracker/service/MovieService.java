@@ -4,6 +4,7 @@ import com.github.davidduclam.movietracker.client.tmdb.TmdbClient;
 import com.github.davidduclam.movietracker.dto.AddUserMediaRequestDTO;
 import com.github.davidduclam.movietracker.client.tmdb.dto.TmdbMovieDTO;
 import com.github.davidduclam.movietracker.dto.MovieResponseDTO;
+import com.github.davidduclam.movietracker.error.MediaNotFoundException;
 import com.github.davidduclam.movietracker.model.Movie;
 import com.github.davidduclam.movietracker.repository.MovieRepository;
 import org.springframework.stereotype.Service;
@@ -36,6 +37,7 @@ public class MovieService {
         movie.setPosterPath(movieResponseDTO.posterPath());
         movie.setBackdropPath(movieResponseDTO.backdropPath());
         movie.setOverview(movieResponseDTO.overview());
+        movie.setVoteAverage(movieResponseDTO.voteAverage());
         return movie;
     }
 
@@ -53,6 +55,26 @@ public class MovieService {
             Movie movie = convertMovieResponseDtoToMovie(fetchMovieDetails(addUserMediaRequestDTO.tmdbId()));
             movieRepository.save(movie);
         }
+    }
+
+    /**
+     * Retrieves movie details from the database using the provided TMDb ID.
+     * If the movie is found, it is mapped to a MovieResponseDTO object.
+     * If the movie is not found, a MediaNotFoundException is thrown.
+     *
+     * @param tmdbId the ID of the movie in the TMDb database
+     * @return a MovieResponseDTO object containing the movie's details,
+     *         including its ID, title, overview, release date, poster path,
+     *         and backdrop path
+     * @throws MediaNotFoundException if the movie with the given TMDb ID is not found
+     */
+    public MovieResponseDTO getMovieFromDb(Long tmdbId) {
+        return movieRepository.findByTmdbId(tmdbId)
+                .map(movie -> new MovieResponseDTO(
+                        movie.getTmdbId(), movie.getTitle(), movie.getOverview(),
+                        movie.getReleaseDate(), movie.getPosterPath(),
+                        movie.getBackdropPath(), movie.getVoteAverage()))
+                .orElseThrow(MediaNotFoundException::new);
     }
 
     /**

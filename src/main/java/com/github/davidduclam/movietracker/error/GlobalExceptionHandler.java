@@ -52,6 +52,13 @@ public class GlobalExceptionHandler {
                 .body(new ErrorResponse("CONSTRAINT_VIOLATION", "Duplicate or invalid data"));
     }
 
+    @ExceptionHandler(MediaNotFoundException.class)
+    public ResponseEntity<ErrorResponse> handleMediaNotFound() {
+        return ResponseEntity
+                .status(HttpStatus.NOT_FOUND)
+                .body(new ErrorResponse("MEDIA_NOT_FOUND", "Media not found"));
+    }
+
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<ErrorResponse> handleValidation(MethodArgumentNotValidException ex) {
         String msg = ex.getBindingResult().getFieldErrors().stream()
