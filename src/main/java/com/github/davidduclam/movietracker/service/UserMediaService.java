@@ -1,13 +1,17 @@
 package com.github.davidduclam.movietracker.service;
 
-import com.github.davidduclam.movietracker.dto.AddUserMediaRequestDTO;
+import com.github.davidduclam.movietracker.dto.*;
 import com.github.davidduclam.movietracker.error.MediaAlreadyExistsException;
+import com.github.davidduclam.movietracker.error.MediaNotFoundException;
 import com.github.davidduclam.movietracker.error.UserNotFoundException;
 import com.github.davidduclam.movietracker.model.*;
 import com.github.davidduclam.movietracker.repository.UserMediaRepository;
 import com.github.davidduclam.movietracker.repository.UserRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.Comparator;
+import java.util.List;
 
 @Service
 public class UserMediaService {
@@ -42,15 +46,104 @@ public class UserMediaService {
     @Transactional
     public UserMedia addMediaToUser(Long userId, AddUserMediaRequestDTO addUserMediaRequestDTO) {
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new UserNotFoundException("User not found"));
+                .orElseThrow(UserNotFoundException::new);
 
         saveMediaToMovieOrTvShowDb(addUserMediaRequestDTO);
 
         if (userMediaRepository.existsByUserIdAndMediaTypeAndTmdbId(userId, addUserMediaRequestDTO.mediaType(), addUserMediaRequestDTO.tmdbId())) {
-            throw new MediaAlreadyExistsException("Media already added");
+            throw new MediaAlreadyExistsException();
         }
 
         return saveUserMediaToDb(user, addUserMediaRequestDTO);
+    }
+
+    /**
+     * Retrieves a list of media items associated with a specific user.
+     * The list is sorted in descending order by the media item's ID.
+     * Media items can be of type Movie or TV Show, and additional details
+     * are fetched based on the provided media type.
+     *
+     * @param userId the unique identifier of the user whose media items are to be retrieved
+     * @return a list of media items (WatchlistItemDTO) belonging to the user
+     * @throws UserNotFoundException if the user with the specified ID is not found
+     */
+    public List<WatchlistItemDTO> getMediaFromUser(Long userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(UserNotFoundException::new);
+
+        return userMediaRepository.findUserMediaByUserId(userId).stream()
+                .sorted(Comparator.comparing(UserMedia::getId).reversed())
+                .map(userMedia -> {
+                    if (userMedia.getMediaType() == MediaType.MOVIE) {
+                        return toWatchlistItem(userMedia, movieService.fetchMovieDetails(userMedia.getTmdbId()));
+                    } else {
+                        return toWatchlistItem(userMedia, tvShowService.fetchTvShowDetails(userMedia.getTmdbId()));
+                    }
+                })
+                .toList();
+    }
+
+    /**
+     * Deletes a specific media item associated with a given user.
+     *
+     * @param userId the ID of the user whose media is to be deleted
+     * @param mediaId the ID of the media to be deleted
+     * @throws UserNotFoundException if the user with the specified ID is not found
+     * @throws MediaNotFoundException if the media with the specified ID is not found for the user
+     */
+    public void deleteMediaFromUser(Long userId, Long mediaId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(UserNotFoundException::new);
+
+        UserMedia userMedia = userMediaRepository
+                .findUserMediaByUserId(userId)
+                .stream().filter(m -> m.getId().equals(mediaId))
+                .findFirst()
+                .orElseThrow(MediaNotFoundException::new);
+
+        userMediaRepository.deleteById(mediaId);
+    }
+
+    /**
+     * Converts a UserMedia object and a MovieResponseDTO object into a WatchlistItemDTO.
+     *
+     * @param userMedia the user-specific media entity containing user-specific media information
+     * @param movieResponseDTO the movie response data transfer object containing movie-related details
+     * @return a WatchlistItemDTO representing the movie in the user's watchlist
+     */
+    private WatchlistItemDTO toWatchlistItem(UserMedia userMedia, MovieResponseDTO movieResponseDTO) {
+        return new MovieWatchlistItemDTO(
+                userMedia.getId(),
+                movieResponseDTO.id(),
+                MediaType.MOVIE,
+                movieResponseDTO.title(),
+                movieResponseDTO.overview(),
+                movieResponseDTO.releaseDate(),
+                movieResponseDTO.posterPath(),
+                movieResponseDTO.backdropPath(),
+                movieResponseDTO.voteAverage()
+        );
+    }
+
+    /**
+     * Converts user media data and TV show response data into a WatchlistItemDTO.
+     *
+     * @param userMedia the user media entity containing user-specific information
+     * @param tvShowResponseDTO the TV show response data containing details about the TV show
+     * @return a WatchlistItemDTO representing the TV show and user-specific information in the watchlist
+     */
+    private WatchlistItemDTO toWatchlistItem(UserMedia userMedia, TvShowResponseDTO tvShowResponseDTO) {
+        return new TvShowWatchlistItemDTO(
+                userMedia.getId(),
+                tvShowResponseDTO.id(),
+                MediaType.TV,
+                tvShowResponseDTO.name(),
+                tvShowResponseDTO.overview(),
+                tvShowResponseDTO.firstAirDate(),
+                tvShowResponseDTO.posterPath(),
+                tvShowResponseDTO.backdropPath(),
+                tvShowResponseDTO.voteAverage()
+        );
     }
 
     /**
