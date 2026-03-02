@@ -38,6 +38,8 @@ Controller → Service → Repository (JPA / PostgreSQL)
                   ↘ TmdbClient → TMDB API
 ```
 
+`UserMediaService` acts as an orchestrator and calls into `MovieService` and `TvShowService` (as well as their repositories directly). This service-to-service pattern is intentional.
+
 - **`client/tmdb/TmdbClient`** — wraps Spring's `RestClient` with Bearer token auth. Uses a supplier-based execute pattern for consistent logging and error wrapping. All TMDB responses deserialize into DTOs under `client/tmdb/dto/`.
 - **`model/`** — JPA entities. `MediaType` enum (values: `TV`, `MOVIE`) unifies media tracking in `UserMedia`.
 - **`dto/`** — Own API types, separate from TMDB wire format types:
