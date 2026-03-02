@@ -12,4 +12,6 @@ public interface UserMediaRepository extends JpaRepository<UserMedia, Long> {
     List<UserMedia> findUserMediaByUserId(Long userId);
 
     boolean existsByUserIdAndMediaTypeAndTmdbId(Long user_id, MediaType mediaType, Long tmdbId);
+
+    Optional<UserMedia> findByIdAndUserId(Long id, Long userId);
 }

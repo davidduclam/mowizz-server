@@ -59,7 +59,7 @@ public class UserMediaService {
 
     /**
      * Retrieves a list of media items associated with a specific user.
-     * The list is sorted in descending order by the media item's ID.
+     * The list is sorted in descending order by the user media id.
      * Media items can be of type Movie or TV Show, and additional details
      * are fetched based on the provided media type.
      *
@@ -67,6 +67,7 @@ public class UserMediaService {
      * @return a list of media items (WatchlistItemDTO) belonging to the user
      * @throws UserNotFoundException if the user with the specified ID is not found
      */
+    @Transactional(readOnly = true)
     public List<WatchlistItemDTO> getMediaFromUser(Long userId) {
         User user = userRepository.findById(userId)
                 .orElseThrow(UserNotFoundException::new);
@@ -75,9 +76,9 @@ public class UserMediaService {
                 .sorted(Comparator.comparing(UserMedia::getId).reversed())
                 .map(userMedia -> {
                     if (userMedia.getMediaType() == MediaType.MOVIE) {
-                        return toWatchlistItem(userMedia, movieService.fetchMovieDetails(userMedia.getTmdbId()));
+                        return toWatchlistItem(userMedia, movieService.getMovieFromDb(userMedia.getTmdbId()));
                     } else {
-                        return toWatchlistItem(userMedia, tvShowService.fetchTvShowDetails(userMedia.getTmdbId()));
+                        return toWatchlistItem(userMedia, tvShowService.getTvShowFromDb(userMedia.getTmdbId()));
                     }
                 })
                 .toList();
@@ -91,14 +92,13 @@ public class UserMediaService {
      * @throws UserNotFoundException if the user with the specified ID is not found
      * @throws MediaNotFoundException if the media with the specified ID is not found for the user
      */
+    @Transactional
     public void deleteMediaFromUser(Long userId, Long mediaId) {
         User user = userRepository.findById(userId)
                 .orElseThrow(UserNotFoundException::new);
 
         UserMedia userMedia = userMediaRepository
-                .findUserMediaByUserId(userId)
-                .stream().filter(m -> m.getId().equals(mediaId))
-                .findFirst()
+                .findByIdAndUserId(mediaId, userId)
                 .orElseThrow(MediaNotFoundException::new);
 
         userMediaRepository.deleteById(mediaId);
