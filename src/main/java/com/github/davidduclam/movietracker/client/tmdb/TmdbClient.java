@@ -1,13 +1,6 @@
 package com.github.davidduclam.movietracker.client.tmdb;
 
-import com.github.davidduclam.movietracker.client.tmdb.dto.TmdbMultiSearchResponseDTO;
-import com.github.davidduclam.movietracker.client.tmdb.dto.TmdbMovieResultDTO;
-import com.github.davidduclam.movietracker.client.tmdb.dto.TmdbSearchResultDTO;
-import com.github.davidduclam.movietracker.client.tmdb.dto.TmdbTvShowResultDTO;
-import com.github.davidduclam.movietracker.client.tmdb.dto.TmdbMovieDTO;
-import com.github.davidduclam.movietracker.client.tmdb.dto.TmdbSearchMovieResponseDTO;
-import com.github.davidduclam.movietracker.client.tmdb.dto.TmdbSearchTvShowResponseDTO;
-import com.github.davidduclam.movietracker.client.tmdb.dto.TmdbTvShowDTO;
+import com.github.davidduclam.movietracker.client.tmdb.dto.*;
 import com.github.davidduclam.movietracker.error.TmdbClientException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -203,6 +196,45 @@ public class TmdbClient {
         return response.results();
     }
 
+    // =======================================================
+    // Trailer endpoints
+    // =======================================================
+
+    /**
+     * Fetches a list of movie video information from the TMDB API based on the provided TMDB movie ID.
+     *
+     * @param tmdbId The unique identifier of the movie in the TMDB database.
+     * @return A list of {@code TmdbVideoDTO} objects containing details about the videos associated with the specified movie.
+     * @throws TmdbClientException if the TMDB API returns an empty or invalid response.
+     */
+    public List<TmdbVideoDTO> fetchMovieTrailers(Long tmdbId) {
+        TmdbVideosResponseDTO response = execute("fetch movie trailers", () -> restClient.get()
+                .uri("/movie/{movie_id}/videos", tmdbId)
+                .retrieve()
+                .body(TmdbVideosResponseDTO.class));
+        if (response == null) {
+            throw  new TmdbClientException("TMDB returned an empty response for movie trailers");
+        }
+        return response.results();
+    }
+
+    /**
+     * Fetches the trailers for a TV show using its TMDB (The Movie Database) ID.
+     *
+     * @param tmdbId The TMDB ID of the TV show for which the trailers need to be fetched.
+     * @return A list of {@code TmdbVideoDTO} objects representing the trailers of the TV show.
+     * @throws TmdbClientException If the TMDB API returns an empty response, or if an error occurs during the API call.
+     */
+    public List<TmdbVideoDTO> fetchTvShowTrailers(Long tmdbId) {
+        TmdbVideosResponseDTO response = execute("fetch tv show trailers", () -> restClient.get()
+                .uri("/tv/{series_id}/videos", tmdbId)
+                .retrieve()
+                .body(TmdbVideosResponseDTO.class));
+        if (response == null) {
+            throw  new TmdbClientException("TMDB returned an empty response for tv show trailers");
+        }
+        return response.results();
+    }
 
     // =======================================================
     // Internal helper
