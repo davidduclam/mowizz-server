@@ -1,15 +1,19 @@
 package com.github.davidduclam.movietracker.service;
 
 import com.github.davidduclam.movietracker.client.tmdb.TmdbClient;
+import com.github.davidduclam.movietracker.client.tmdb.dto.TmdbVideoDTO;
 import com.github.davidduclam.movietracker.dto.AddUserMediaRequestDTO;
 import com.github.davidduclam.movietracker.client.tmdb.dto.TmdbMovieDTO;
 import com.github.davidduclam.movietracker.dto.MovieResponseDTO;
+import com.github.davidduclam.movietracker.dto.TrailerDTO;
 import com.github.davidduclam.movietracker.error.MediaNotFoundException;
+import com.github.davidduclam.movietracker.error.TmdbClientException;
 import com.github.davidduclam.movietracker.model.Movie;
 import com.github.davidduclam.movietracker.repository.MovieRepository;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class MovieService {
@@ -127,6 +131,33 @@ public class MovieService {
     public List<MovieResponseDTO> upcomingMovies() {
         List<TmdbMovieDTO> tmdbMovieDTOList = tmdbClient.upcomingMovies();
         return tmdbMovieDTOList.stream().map(this::toMovieResponse).toList();
+    }
+
+    /**
+     * Fetches the movie trailer for the given TMDB (The Movie Database) movie ID.
+     *
+     * @param tmdbId the unique identifier of the movie in TMDB whose trailer is to be fetched
+     * @return A {@link TrailerDTO} object representing the movie trailer
+     * @throws MediaNotFoundException if no official trailer is found for the given movie.
+     */
+    public TrailerDTO getMovieTrailer(Long tmdbId) {
+        List<TmdbVideoDTO> tmdbVideoDTOList = tmdbClient.fetchMovieTrailers(tmdbId);
+        Optional<TrailerDTO> trailerDTO = tmdbVideoDTOList.stream().filter(f -> f.type().equals("Trailer") && f.official().equals(true)).map(this::toTrailer).findFirst();
+        return trailerDTO.orElseThrow(MediaNotFoundException::new);
+    }
+
+    /**
+     * Converts a TmdbVideoDTO object to a TrailerDTO object.
+     *
+     * @param tmdbVideoDTO the TmdbVideoDTO object containing video details
+     * @return a TrailerDTO object populated with data from the given TmdbVideoDTO
+     */
+    private TrailerDTO toTrailer(TmdbVideoDTO tmdbVideoDTO) {
+        return new TrailerDTO(
+                tmdbVideoDTO.key(),
+                tmdbVideoDTO.name(),
+                tmdbVideoDTO.site()
+        );
     }
 
     /**
