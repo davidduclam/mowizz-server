@@ -188,12 +188,14 @@ docker compose down -v
 
 ### Movies (`/movies`)
 - `GET /movies/{tmdbId}`
+- `GET /movies/{tmdbId}/trailer`
 - `GET /movies/popular`
 - `GET /movies/top-rated`
 - `GET /movies/upcoming`
 
 ### TV Shows (`/shows`)
 - `GET /shows/{tmdbId}`
+- `GET /shows/{tmdbId}/trailer`
 - `GET /shows/popular`
 - `GET /shows/top-rated`
 
