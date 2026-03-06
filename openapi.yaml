@@ -1,7 +1,7 @@
 openapi: 3.0.3
 info:
   title: MoWizz API
-  version: 1.3.0
+  version: 1.4.0
   description: OpenAPI documentation for current MoWizz server endpoints.
 servers:
   - url: http://localhost:8080
@@ -36,6 +36,33 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Movie"
+
+  /movies/{tmdbId}/trailer:
+    get:
+      tags: [Movies]
+      operationId: getMovieTrailer
+      summary: Get the official trailer for a movie
+      description: Returns the first official trailer of type "Trailer" from TMDB for the given movie. Only YouTube results are returned by TMDB.
+      parameters:
+        - in: path
+          name: tmdbId
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        "200":
+          description: Trailer found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Trailer"
+              example:
+                key: b9EkMc79ZSU
+                name: Season 1 Official Final Trailer
+                site: YouTube
+        "404":
+          description: No trailer found for this movie
 
   /movies/popular:
     get:
@@ -101,6 +128,33 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/TvShow"
+
+  /shows/{tmdbId}/trailer:
+    get:
+      tags: [TV Shows]
+      operationId: getTvShowTrailer
+      summary: Get the official trailer for a TV show
+      description: Returns the first official trailer of type "Trailer" from TMDB for the given TV show. Only YouTube results are returned by TMDB.
+      parameters:
+        - in: path
+          name: tmdbId
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        "200":
+          description: Trailer found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Trailer"
+              example:
+                key: b9EkMc79ZSU
+                name: Season 1 Official Final Trailer
+                site: YouTube
+        "404":
+          description: No trailer found for this TV show
 
   /shows/popular:
     get:
@@ -347,6 +401,19 @@ components:
           nullable: true
         mediaType:
           $ref: "#/components/schemas/MediaType"
+
+    Trailer:
+      type: object
+      properties:
+        key:
+          type: string
+          description: Video ID on the hosting platform (e.g. YouTube video ID)
+        name:
+          type: string
+          description: Title of the trailer
+        site:
+          type: string
+          description: Hosting platform (e.g. YouTube)
 
     Movie:
       type: object

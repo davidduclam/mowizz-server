@@ -1,16 +1,20 @@
 package com.github.davidduclam.movietracker.service;
 
 import com.github.davidduclam.movietracker.client.tmdb.TmdbClient;
+import com.github.davidduclam.movietracker.client.tmdb.dto.TmdbVideoDTO;
 import com.github.davidduclam.movietracker.dto.AddUserMediaRequestDTO;
 import com.github.davidduclam.movietracker.client.tmdb.dto.TmdbTvShowDTO;
 import com.github.davidduclam.movietracker.dto.MovieResponseDTO;
+import com.github.davidduclam.movietracker.dto.TrailerDTO;
 import com.github.davidduclam.movietracker.dto.TvShowResponseDTO;
 import com.github.davidduclam.movietracker.error.MediaNotFoundException;
+import com.github.davidduclam.movietracker.error.TmdbClientException;
 import com.github.davidduclam.movietracker.model.TvShow;
 import com.github.davidduclam.movietracker.repository.TvShowRepository;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class TvShowService {
@@ -127,6 +131,33 @@ public class TvShowService {
     public List<TvShowResponseDTO> topRatedTvShows() {
         List<TmdbTvShowDTO> tmdbTvShowDTOList = tmdbClient.topRatedTvShows();
         return tmdbTvShowDTOList.stream().map(this::toTvShowResponse).toList();
+    }
+
+    /**
+     * Retrieves the official trailer for a TV show using its TMDB ID.
+     *
+     * @param tmdbId The unique ID of the TV show in TMDB.
+     * @return A {@link TrailerDTO} representing the official trailer of the TV show.
+     * @throws MediaNotFoundException if no official trailer is found for the given TV show.
+     */
+    public TrailerDTO getTvShowTrailer(Long tmdbId) {
+        List<TmdbVideoDTO> tmdbVideoDTOList = tmdbClient.fetchTvShowTrailers(tmdbId);
+        Optional<TrailerDTO> trailerDTO = tmdbVideoDTOList.stream().filter(f -> f.type().equals("Trailer") && f.official().equals(true)).map(this::toTrailer).findFirst();
+        return trailerDTO.orElseThrow(MediaNotFoundException::new);
+    }
+
+    /**
+     * Converts a TmdbVideoDTO object to a TrailerDTO object.
+     *
+     * @param tmdbVideoDTO the TmdbVideoDTO object containing video details
+     * @return a TrailerDTO object populated with data from the given TmdbVideoDTO
+     */
+    private TrailerDTO toTrailer(TmdbVideoDTO tmdbVideoDTO) {
+        return new TrailerDTO(
+                tmdbVideoDTO.key(),
+                tmdbVideoDTO.name(),
+                tmdbVideoDTO.site()
+        );
     }
 
 
