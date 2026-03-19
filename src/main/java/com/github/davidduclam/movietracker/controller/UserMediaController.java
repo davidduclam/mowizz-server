@@ -1,6 +1,6 @@
 package com.github.davidduclam.movietracker.controller;
 
-import com.github.davidduclam.movietracker.dto.AddUserMediaRequestDTO;
+import com.github.davidduclam.movietracker.dto.UserMediaRequestDTO;
 import com.github.davidduclam.movietracker.dto.WatchlistItemDTO;
 import com.github.davidduclam.movietracker.model.UserMedia;
 import com.github.davidduclam.movietracker.service.UserMediaService;
@@ -19,8 +19,8 @@ public class UserMediaController {
     }
 
     @PostMapping("/users/{user_id}/media")
-    public UserMedia saveMediaToDb(@PathVariable Long user_id, @Valid @RequestBody AddUserMediaRequestDTO addUserMediaRequestDTO) {
-        return userMediaService.addMediaToUser(user_id, addUserMediaRequestDTO);
+    public UserMedia saveMediaToDb(@PathVariable Long user_id, @Valid @RequestBody UserMediaRequestDTO userMediaRequestDTO) {
+        return userMediaService.addMediaToUser(user_id, userMediaRequestDTO);
     }
 
     @GetMapping("/users/{user_id}/media")
@@ -28,8 +28,8 @@ public class UserMediaController {
         return userMediaService.getMediaFromUser(user_id);
     }
 
-    @DeleteMapping("/users/{user_id}/media/{media_id}")
-    public void deleteMediaFromUser(@PathVariable Long user_id, @PathVariable Long media_id) {
-        userMediaService.deleteMediaFromUser(user_id, media_id);
+    @DeleteMapping("/users/{user_id}/media")
+    public void deleteMediaFromUser(@PathVariable Long user_id, @Valid @RequestBody UserMediaRequestDTO userMediaRequestDTO) {
+        userMediaService.deleteMediaFromUser(user_id, userMediaRequestDTO);
     }
 }

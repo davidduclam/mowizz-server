@@ -3,7 +3,7 @@ package com.github.davidduclam.movietracker.dto;
 import com.github.davidduclam.movietracker.model.MediaType;
 import jakarta.validation.constraints.NotNull;
 
-public record AddUserMediaRequestDTO(
+public record UserMediaRequestDTO(
     @NotNull(message = "tmdbId is required")
     Long tmdbId,
 

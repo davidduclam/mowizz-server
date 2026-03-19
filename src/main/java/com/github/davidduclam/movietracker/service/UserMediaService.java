@@ -37,24 +37,24 @@ public class UserMediaService {
      * - Saves the UserMedia entity associating the user with the specified media.
      *
      * @param userId The unique identifier of the user to whom the media is to be added.
-     * @param addUserMediaRequestDTO A data transfer object containing the information about the media
+     * @param userMediaRequestDTO A data transfer object containing the information about the media
      *                                to be added, including its TMDb ID and media type (e.g., movie or TV show).
      * @return The UserMedia entity representing the association between the user and the added media.
      * @throws UserNotFoundException If the specified user does not exist.
      * @throws MediaAlreadyExistsException If the media has already been added to the user's collection.
      */
     @Transactional
-    public UserMedia addMediaToUser(Long userId, AddUserMediaRequestDTO addUserMediaRequestDTO) {
+    public UserMedia addMediaToUser(Long userId, UserMediaRequestDTO userMediaRequestDTO) {
         User user = userRepository.findById(userId)
                 .orElseThrow(UserNotFoundException::new);
 
-        saveMediaToMovieOrTvShowDb(addUserMediaRequestDTO);
+        saveMediaToMovieOrTvShowDb(userMediaRequestDTO);
 
-        if (userMediaRepository.existsByUserIdAndMediaTypeAndTmdbId(userId, addUserMediaRequestDTO.mediaType(), addUserMediaRequestDTO.tmdbId())) {
+        if (userMediaRepository.existsByUserIdAndMediaTypeAndTmdbId(userId, userMediaRequestDTO.mediaType(), userMediaRequestDTO.tmdbId())) {
             throw new MediaAlreadyExistsException();
         }
 
-        return saveUserMediaToDb(user, addUserMediaRequestDTO);
+        return saveUserMediaToDb(user, userMediaRequestDTO);
     }
 
     /**
@@ -85,23 +85,25 @@ public class UserMediaService {
     }
 
     /**
-     * Deletes a specific media item associated with a given user.
+     * Deletes a specific piece of media associated with a user based on the provided user ID
+     * and media details.
      *
-     * @param userId the ID of the user whose media is to be deleted
-     * @param mediaId the ID of the media to be deleted
-     * @throws UserNotFoundException if the user with the specified ID is not found
-     * @throws MediaNotFoundException if the media with the specified ID is not found for the user
+     * @param userId the unique identifier of the user for whom the media is to be deleted
+     * @param userMediaRequestDTO an object containing the details of the media to be deleted,
+     *                            such as the TMDB ID and media type
+     * @throws UserNotFoundException if the user with the specified ID does not exist
+     * @throws MediaNotFoundException if the specified media is not associated with the user
      */
     @Transactional
-    public void deleteMediaFromUser(Long userId, Long mediaId) {
+    public void deleteMediaFromUser(Long userId, UserMediaRequestDTO userMediaRequestDTO) {
         User user = userRepository.findById(userId)
                 .orElseThrow(UserNotFoundException::new);
 
         UserMedia userMedia = userMediaRepository
-                .findByIdAndUserId(mediaId, userId)
+                .findByUserIdAndTmdbIdAndMediaType(userId, userMediaRequestDTO.tmdbId(), userMediaRequestDTO.mediaType())
                 .orElseThrow(MediaNotFoundException::new);
 
-        userMediaRepository.deleteById(mediaId);
+        userMediaRepository.deleteById(userMedia.getId());
     }
 
     /**
@@ -151,11 +153,11 @@ public class UserMediaService {
      * Delegates the saving logic to the {@code addUserMediaToDb} method.
      *
      * @param user The User entity associated with the UserMedia to be added.
-     * @param addUserMediaRequestDTO The data transfer object containing information required to create the UserMedia entity.
+     * @param userMediaRequestDTO The data transfer object containing information required to create the UserMedia entity.
      * @return The UserMedia entity that was saved to the database.
      */
-    private UserMedia saveUserMediaToDb(User user, AddUserMediaRequestDTO addUserMediaRequestDTO) {
-        return addUserMediaToDb(user, addUserMediaRequestDTO);
+    private UserMedia saveUserMediaToDb(User user, UserMediaRequestDTO userMediaRequestDTO) {
+        return addUserMediaToDb(user, userMediaRequestDTO);
     }
 
     /**
@@ -163,19 +165,19 @@ public class UserMediaService {
      * Determines the type of media from the {@code mediaType} field in the DTO and delegates the
      * save operation to the appropriate service.
      *
-     * @param addUserMediaRequestDTO the data transfer object containing details of the media to be saved,
+     * @param userMediaRequestDTO the data transfer object containing details of the media to be saved,
      *                               including its type and TMDb ID
      * @throws IllegalArgumentException if the {@code mediaType} field in the request DTO is null
      */
-    private void saveMediaToMovieOrTvShowDb(AddUserMediaRequestDTO addUserMediaRequestDTO) {
-        if (addUserMediaRequestDTO.mediaType() == null) {
+    private void saveMediaToMovieOrTvShowDb(UserMediaRequestDTO userMediaRequestDTO) {
+        if (userMediaRequestDTO.mediaType() == null) {
             throw new IllegalArgumentException("mediaType is required");
         }
 
-        if (addUserMediaRequestDTO.mediaType() == MediaType.MOVIE) {
-            movieService.saveMovieToDb(addUserMediaRequestDTO);
+        if (userMediaRequestDTO.mediaType() == MediaType.MOVIE) {
+            movieService.saveMovieToDb(userMediaRequestDTO);
         } else {
-            tvShowService.saveTvShowToDb(addUserMediaRequestDTO);
+            tvShowService.saveTvShowToDb(userMediaRequestDTO);
         }
     }
 
@@ -183,14 +185,14 @@ public class UserMediaService {
      * Adds a new UserMedia entity to the database based on the provided user and request DTO.
      *
      * @param user The User entity associated with the UserMedia to be added.
-     * @param addUserMediaRequestDTO The data transfer object containing information required to create the UserMedia entity.
+     * @param userMediaRequestDTO The data transfer object containing information required to create the UserMedia entity.
      * @return The UserMedia entity that was saved to the database.
      */
-    private UserMedia addUserMediaToDb(User user, AddUserMediaRequestDTO addUserMediaRequestDTO) {
+    private UserMedia addUserMediaToDb(User user, UserMediaRequestDTO userMediaRequestDTO) {
         UserMedia userMedia = new UserMedia();
         userMedia.setUser(user);
-        userMedia.setTmdbId(addUserMediaRequestDTO.tmdbId());
-        userMedia.setMediaType(addUserMediaRequestDTO.mediaType());
+        userMedia.setTmdbId(userMediaRequestDTO.tmdbId());
+        userMedia.setMediaType(userMediaRequestDTO.mediaType());
 
         userMediaRepository.save(userMedia);
         return userMedia;

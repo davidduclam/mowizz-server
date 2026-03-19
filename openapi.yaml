@@ -293,7 +293,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/AddUserMediaRequest"
+              $ref: "#/components/schemas/UserMediaRequest"
       responses:
         "200":
           description: User media entry created
@@ -328,7 +328,7 @@ paths:
         "404":
           description: User not found
 
-  /users/{user_id}/media/{media_id}:
+  /users/{user_id}/media:
     delete:
       tags: [User Media]
       operationId: deleteMediaForUser
@@ -340,12 +340,12 @@ paths:
           schema:
             type: integer
             format: int64
-        - in: path
-          name: media_id
-          required: true
-          schema:
-            type: integer
-            format: int64
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UserMediaRequest"
       responses:
         "200":
           description: Media removed
@@ -363,7 +363,7 @@ components:
         username:
           type: string
 
-    AddUserMediaRequest:
+    UserMediaRequest:
       type: object
       required:
         - tmdbId

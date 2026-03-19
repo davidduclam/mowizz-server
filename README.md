@@ -212,7 +212,8 @@ docker compose down -v
 - `POST /users/{user_id}/media` — add a movie or TV show to a user's watchlist
   request body example: `{ "tmdbId": 12345, "mediaType": "MOVIE" }`
 - `GET /users/{user_id}/media` — list all watchlist items for a user
-- `DELETE /users/{user_id}/media/{media_id}` — remove a watchlist item
+- `DELETE /users/{user_id}/media` — remove a watchlist item
+  request body example: `{ "tmdbId": 12345, "mediaType": "MOVIE" }`
 
 ## OpenAPI
 
