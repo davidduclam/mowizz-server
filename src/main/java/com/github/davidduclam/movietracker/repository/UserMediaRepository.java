@@ -13,5 +13,5 @@ public interface UserMediaRepository extends JpaRepository<UserMedia, Long> {
 
     boolean existsByUserIdAndMediaTypeAndTmdbId(Long user_id, MediaType mediaType, Long tmdbId);
 
-    Optional<UserMedia> findByIdAndUserId(Long id, Long userId);
+    Optional<UserMedia> findByUserIdAndTmdbIdAndMediaType(Long userId, Long tmdbId, MediaType mediaType);
 }

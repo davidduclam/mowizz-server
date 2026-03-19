@@ -2,13 +2,11 @@ package com.github.davidduclam.movietracker.service;
 
 import com.github.davidduclam.movietracker.client.tmdb.TmdbClient;
 import com.github.davidduclam.movietracker.client.tmdb.dto.TmdbVideoDTO;
-import com.github.davidduclam.movietracker.dto.AddUserMediaRequestDTO;
+import com.github.davidduclam.movietracker.dto.UserMediaRequestDTO;
 import com.github.davidduclam.movietracker.client.tmdb.dto.TmdbTvShowDTO;
-import com.github.davidduclam.movietracker.dto.MovieResponseDTO;
 import com.github.davidduclam.movietracker.dto.TrailerDTO;
 import com.github.davidduclam.movietracker.dto.TvShowResponseDTO;
 import com.github.davidduclam.movietracker.error.MediaNotFoundException;
-import com.github.davidduclam.movietracker.error.TmdbClientException;
 import com.github.davidduclam.movietracker.model.TvShow;
 import com.github.davidduclam.movietracker.repository.TvShowRepository;
 import org.springframework.stereotype.Service;
@@ -56,12 +54,12 @@ public class TvShowService {
      * from an external API, converts the fetched data into a {@code TvShow}
      * entity, and saves it to the repository.
      *
-     * @param addUserMediaRequestDTO the DTO containing the TMDB ID of the
+     * @param userMediaRequestDTO the DTO containing the TMDB ID of the
      *                                TV show to be saved
      */
-    public void saveTvShowToDb(AddUserMediaRequestDTO addUserMediaRequestDTO) {
-        if (tvShowRepository.findByTmdbId(addUserMediaRequestDTO.tmdbId()).isEmpty()) {
-            TvShow tvShow = convertTvShowResponseDtoToTvShow(fetchTvShowDetails(addUserMediaRequestDTO.tmdbId()));
+    public void saveTvShowToDb(UserMediaRequestDTO userMediaRequestDTO) {
+        if (tvShowRepository.findByTmdbId(userMediaRequestDTO.tmdbId()).isEmpty()) {
+            TvShow tvShow = convertTvShowResponseDtoToTvShow(fetchTvShowDetails(userMediaRequestDTO.tmdbId()));
             tvShowRepository.save(tvShow);
         }
     }
@@ -159,7 +157,6 @@ public class TvShowService {
                 tmdbVideoDTO.site()
         );
     }
-
 
     /**
      * Converts a {@code TmdbTvShowDTO} object into a {@code TvShowResponseDTO}.

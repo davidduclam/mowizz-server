@@ -2,12 +2,11 @@ package com.github.davidduclam.movietracker.service;
 
 import com.github.davidduclam.movietracker.client.tmdb.TmdbClient;
 import com.github.davidduclam.movietracker.client.tmdb.dto.TmdbVideoDTO;
-import com.github.davidduclam.movietracker.dto.AddUserMediaRequestDTO;
+import com.github.davidduclam.movietracker.dto.UserMediaRequestDTO;
 import com.github.davidduclam.movietracker.client.tmdb.dto.TmdbMovieDTO;
 import com.github.davidduclam.movietracker.dto.MovieResponseDTO;
 import com.github.davidduclam.movietracker.dto.TrailerDTO;
 import com.github.davidduclam.movietracker.error.MediaNotFoundException;
-import com.github.davidduclam.movietracker.error.TmdbClientException;
 import com.github.davidduclam.movietracker.model.Movie;
 import com.github.davidduclam.movietracker.repository.MovieRepository;
 import org.springframework.stereotype.Service;
@@ -51,12 +50,12 @@ public class MovieService {
      * If not, it fetches the movie details from TMDb, converts the details to a Movie entity,
      * and saves it to the database.
      *
-     * @param addUserMediaRequestDTO the data transfer object containing information about the movie to be added,
+     * @param userMediaRequestDTO the data transfer object containing information about the movie to be added,
      *                               including the TMDb ID required to fetch the movie details.
      */
-    public void saveMovieToDb(AddUserMediaRequestDTO addUserMediaRequestDTO) {
-        if (movieRepository.findByTmdbId(addUserMediaRequestDTO.tmdbId()).isEmpty()) {
-            Movie movie = convertMovieResponseDtoToMovie(fetchMovieDetails(addUserMediaRequestDTO.tmdbId()));
+    public void saveMovieToDb(UserMediaRequestDTO userMediaRequestDTO) {
+        if (movieRepository.findByTmdbId(userMediaRequestDTO.tmdbId()).isEmpty()) {
+            Movie movie = convertMovieResponseDtoToMovie(fetchMovieDetails(userMediaRequestDTO.tmdbId()));
             movieRepository.save(movie);
         }
     }

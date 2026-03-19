@@ -45,7 +45,7 @@ Controller → Service → Repository (JPA / PostgreSQL)
 - **`dto/`** — Own API types, separate from TMDB wire format types:
   - `MovieResponseDTO`, `TvShowResponseDTO` — full detail response payloads (camelCase fields)
   - `MovieSearchResultDTO`, `TvShowSearchResultDTO` — lightweight search result payloads, both implement the `SearchResultDTO` sealed interface
-  - `AddUserMediaRequestDTO` — request body for the user media endpoint
+  - `UserMediaRequestDTO` — request body for the user media endpoints (add and delete)
 - **`error/GlobalExceptionHandler`** — `@RestControllerAdvice` mapping custom exceptions to HTTP status codes (e.g. `TmdbClientException` → 503, `UserNotFoundException` → 404, `MediaAlreadyExistsException` → 409).
 
 **Database:** PostgreSQL (Supabase) in production; Flyway manages migrations with `baseline-on-migrate=true` and Hibernate set to `ddl-auto=validate`. The `db/migration/` directory is currently empty — schema is created by `ddl-auto=update` in Docker Compose.
