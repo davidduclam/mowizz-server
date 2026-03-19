@@ -327,8 +327,6 @@ paths:
                   $ref: "#/components/schemas/WatchlistItem"
         "404":
           description: User not found
-
-  /users/{user_id}/media:
     delete:
       tags: [User Media]
       operationId: deleteMediaForUser
