@@ -9,5 +9,6 @@ public record TmdbTvShowDTO(
         LocalDate first_air_date,
         String poster_path,
         String backdrop_path,
-        Double vote_average
+        Double vote_average,
+        TmdbVideoResultsDTO videos
 ) {}

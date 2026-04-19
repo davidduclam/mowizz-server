@@ -71,7 +71,7 @@ public class TmdbClient {
      */
     public TmdbMovieDTO fetchMovieDetails(Long tmdbId) {
         TmdbMovieDTO response = execute("fetch movie details", () -> restClient.get()
-                .uri("/movie/{movie_id}", tmdbId)
+                .uri("/movie/{movie_id}?append_to_response=videos", tmdbId)
                 .retrieve()
                 .body(TmdbMovieDTO.class));
         if (response == null) {
@@ -144,7 +144,7 @@ public class TmdbClient {
      */
     public TmdbTvShowDTO fetchTvShowDetails(Long tmdbId) {
         TmdbTvShowDTO response = execute("fetch tv show details", () -> restClient.get()
-                .uri("/tv/{series_id}", tmdbId)
+                .uri("/tv/{series_id}?append_to_response=videos", tmdbId)
                 .retrieve()
                 .body(TmdbTvShowDTO.class));
         if (response == null) {

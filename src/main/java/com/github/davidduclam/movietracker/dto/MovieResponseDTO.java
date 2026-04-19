@@ -9,5 +9,6 @@ public record MovieResponseDTO(
     LocalDate releaseDate,
     String posterPath,
     String backdropPath,
-    Double voteAverage
+    Double voteAverage,
+    String trailerKey
 ) {}

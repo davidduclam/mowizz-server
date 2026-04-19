@@ -9,6 +9,7 @@ public record TvShowResponseDTO(
         LocalDate firstAirDate,
         String posterPath,
         String backdropPath,
-        Double voteAverage
+        Double voteAverage,
+        String trailerKey
 ) {}
 

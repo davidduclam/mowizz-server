@@ -11,6 +11,7 @@ import com.github.davidduclam.movietracker.model.Movie;
 import com.github.davidduclam.movietracker.repository.MovieRepository;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -76,7 +77,7 @@ public class MovieService {
                 .map(movie -> new MovieResponseDTO(
                         movie.getTmdbId(), movie.getTitle(), movie.getOverview(),
                         movie.getReleaseDate(), movie.getPosterPath(),
-                        movie.getBackdropPath(), movie.getVoteAverage()))
+                        movie.getBackdropPath(), movie.getVoteAverage(), null))
                 .orElseThrow(MediaNotFoundException::new);
     }
 
@@ -160,13 +161,20 @@ public class MovieService {
     }
 
     /**
-     * Converts a TmdbMovieDTO object into a MovieResponseDTO object.
+     * Converts a {@link TmdbMovieDTO} object into a {@link MovieResponseDTO} object.
      *
-     * @param tmdbMovieDTO the DTO containing movie details retrieved from TMDb
-     * @return a MovieResponseDTO object containing the movie's details, including its ID, title, release date,
-     *         poster path, backdrop path, overview, and vote average
+     * @param tmdbMovieDTO the {@link TmdbMovieDTO} object containing movie information
+     *                     retrieved from the TMDb API.
+     * @return a {@link MovieResponseDTO} object containing the transformed movie
+     *         information, including basic details and the trailer key if available.
      */
     private MovieResponseDTO toMovieResponse(TmdbMovieDTO tmdbMovieDTO) {
+        String trailerKey = tmdbMovieDTO.videos() == null ? null :
+                tmdbMovieDTO.videos().results().stream()
+                        .filter(v -> "Trailer".equals(v.type()) && Boolean.TRUE.equals(v.official()))
+                        .map(TmdbVideoDTO::key)
+                        .findFirst()
+                        .orElse(null);
         return new MovieResponseDTO(
                 tmdbMovieDTO.id(),
                 tmdbMovieDTO.title(),
@@ -174,6 +182,7 @@ public class MovieService {
                 tmdbMovieDTO.release_date(),
                 tmdbMovieDTO.poster_path(),
                 tmdbMovieDTO.backdrop_path(),
-                tmdbMovieDTO.vote_average());
+                tmdbMovieDTO.vote_average(),
+                trailerKey);
     }
 }
