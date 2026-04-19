@@ -1,7 +1,7 @@
 openapi: 3.0.3
 info:
   title: MoWizz API
-  version: 1.5.0
+  version: 1.6.0
   description: OpenAPI documentation for current MoWizz server endpoints.
 servers:
   - url: http://localhost:8080
@@ -562,6 +562,10 @@ components:
         voteAverage:
           type: number
           format: double
+        trailerKey:
+          type: string
+          nullable: true
+          description: YouTube video ID of the first official trailer, or null if none exists
 
     TvShow:
       type: object
@@ -585,6 +589,10 @@ components:
         voteAverage:
           type: number
           format: double
+        trailerKey:
+          type: string
+          nullable: true
+          description: YouTube video ID of the first official trailer, or null if none exists
 
     SearchResult:
       oneOf:

@@ -80,7 +80,7 @@ public class TvShowService {
                 .map(tvShow -> new TvShowResponseDTO(
                         tvShow.getTmdbId(), tvShow.getTitle(), tvShow.getOverview(),
                         tvShow.getFirstAirDate(), tvShow.getPosterPath(),
-                        tvShow.getBackdropPath(), tvShow.getVoteAverage()))
+                        tvShow.getBackdropPath(), tvShow.getVoteAverage(), null))
                 .orElseThrow(MediaNotFoundException::new);
     }
 
@@ -159,17 +159,18 @@ public class TvShowService {
     }
 
     /**
-     * Converts a {@code TmdbTvShowDTO} object into a {@code TvShowResponseDTO}.
+     * Converts a TmdbTvShowDTO object into a TvShowResponseDTO object.
      *
-     * This method maps the attributes from the {@code TmdbTvShowDTO} object, such
-     * as ID, name, overview, first air date, poster path, backdrop path, and vote
-     * average, to a new {@code TvShowResponseDTO} instance.
-     *
-     * @param tmdbTvShowDTO the DTO containing the TV show details fetched from the TMDB API
-     * @return a {@code TvShowResponseDTO} populated with the corresponding values
-     *         from the {@code TmdbTvShowDTO}
+     * @param tmdbTvShowDTO the input DTO containing data from the TMDB API about a TV show
+     * @return a TvShowResponseDTO containing the mapped data, including the trailer key if available
      */
     private TvShowResponseDTO toTvShowResponse(TmdbTvShowDTO tmdbTvShowDTO) {
+        String trailerKey = tmdbTvShowDTO.videos() == null ? null :
+                tmdbTvShowDTO.videos().results().stream()
+                        .filter(v -> v.type().equals("Trailer") && v.official().equals(true) && "YouTube".equals(v.site()))
+                        .map(TmdbVideoDTO::key)
+                        .findFirst()
+                        .orElse(null);
         return new TvShowResponseDTO(
                 tmdbTvShowDTO.id(),
                 tmdbTvShowDTO.name(),
@@ -177,6 +178,7 @@ public class TvShowService {
                 tmdbTvShowDTO.first_air_date(),
                 tmdbTvShowDTO.poster_path(),
                 tmdbTvShowDTO.backdrop_path(),
-                tmdbTvShowDTO.vote_average());
+                tmdbTvShowDTO.vote_average(),
+                trailerKey);
     }
 }

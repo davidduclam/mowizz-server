@@ -1,6 +1,7 @@
 package com.github.davidduclam.movietracker.client.tmdb.dto;
 
 import java.time.LocalDate;
+import java.util.List;
 
 public record TmdbMovieDTO(
     Long id,
@@ -9,5 +10,6 @@ public record TmdbMovieDTO(
     String poster_path,
     String backdrop_path,
     String overview,
-    Double vote_average
+    Double vote_average,
+    TmdbVideoResultsDTO videos
 ) {}
