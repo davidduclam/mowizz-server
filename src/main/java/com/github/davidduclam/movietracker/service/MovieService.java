@@ -171,7 +171,7 @@ public class MovieService {
     private MovieResponseDTO toMovieResponse(TmdbMovieDTO tmdbMovieDTO) {
         String trailerKey = tmdbMovieDTO.videos() == null ? null :
                 tmdbMovieDTO.videos().results().stream()
-                        .filter(v -> "Trailer".equals(v.type()) && Boolean.TRUE.equals(v.official()))
+                        .filter(v -> v.type().equals("Trailer") && v.official().equals(true) && "YouTube".equals(v.site()))
                         .map(TmdbVideoDTO::key)
                         .findFirst()
                         .orElse(null);

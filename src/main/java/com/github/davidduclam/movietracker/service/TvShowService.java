@@ -167,7 +167,7 @@ public class TvShowService {
     private TvShowResponseDTO toTvShowResponse(TmdbTvShowDTO tmdbTvShowDTO) {
         String trailerKey = tmdbTvShowDTO.videos() == null ? null :
                 tmdbTvShowDTO.videos().results().stream()
-                        .filter(v -> "Trailer".equals(v.type()) && Boolean.TRUE.equals(v.official()))
+                        .filter(v -> v.type().equals("Trailer") && v.official().equals(true) && "YouTube".equals(v.site()))
                         .map(TmdbVideoDTO::key)
                         .findFirst()
                         .orElse(null);
