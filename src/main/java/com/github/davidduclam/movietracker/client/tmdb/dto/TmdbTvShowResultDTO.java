@@ -8,6 +8,6 @@ public record TmdbTvShowResultDTO(
         @JsonProperty("poster_path") String posterPath,
         @JsonProperty("vote_average") double voteAverage,
         String name,
-        @JsonProperty("first_air_date") String releaseDate
+        @JsonProperty("first_air_date") String firstAirDate
 
 ) implements TmdbSearchResultDTO {}

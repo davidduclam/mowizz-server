@@ -83,7 +83,7 @@ public class SearchService {
                 t.id(),
                 t.mediaType(),
                 t.name(),
-                t.releaseDate() != null && !t.releaseDate().isBlank() ? LocalDate.parse(t.releaseDate()) : null,
+                t.firstAirDate() != null && !t.firstAirDate().isBlank() ? LocalDate.parse(t.firstAirDate()) : null,
                 t.posterPath(),
                 t.voteAverage());
     }
