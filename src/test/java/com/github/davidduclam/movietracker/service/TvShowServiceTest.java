@@ -1,6 +1,7 @@
 package com.github.davidduclam.movietracker.service;
 
 import com.github.davidduclam.movietracker.client.tmdb.TmdbClient;
+import com.github.davidduclam.movietracker.client.tmdb.dto.TmdbImageResultsDTO;
 import com.github.davidduclam.movietracker.client.tmdb.dto.TmdbTvShowDTO;
 import com.github.davidduclam.movietracker.client.tmdb.dto.TmdbVideoDTO;
 import com.github.davidduclam.movietracker.client.tmdb.dto.TmdbVideoResultsDTO;
@@ -43,7 +44,7 @@ public class TvShowServiceTest {
     @Test
     void saveTvShowToDb_tvShowNotInDb_savesTvShow() {
         TmdbVideoResultsDTO tmdbVideoResultsDTO = new TmdbVideoResultsDTO(List.of());
-        TmdbTvShowDTO tmdbTvShowDTO = new TmdbTvShowDTO(1L,"", "", LocalDate.now(), "", "", 0.0, tmdbVideoResultsDTO);
+        TmdbTvShowDTO tmdbTvShowDTO = new TmdbTvShowDTO(1L,"", "", LocalDate.now(), "", "", 0.0, tmdbVideoResultsDTO, new TmdbImageResultsDTO(List.of()));
 
         UserMediaRequestDTO userMedia = new UserMediaRequestDTO(1L, MediaType.TV);
         when(tvShowRepository.findByTmdbId(1L)).thenReturn(Optional.empty());
@@ -87,7 +88,7 @@ public class TvShowServiceTest {
     void testPopularTvShows() {
         List<TmdbTvShowDTO> list = new ArrayList<>();
         TmdbVideoResultsDTO videos = new TmdbVideoResultsDTO(List.of());
-        TmdbTvShowDTO movie = new TmdbTvShowDTO(1L, "", "", LocalDate.now(), "", "", 0.0, videos);
+        TmdbTvShowDTO movie = new TmdbTvShowDTO(1L, "", "", LocalDate.now(), "", "", 0.0, videos, new TmdbImageResultsDTO(List.of()));
         list.add(movie);
 
         when(tmdbClient.popularTvShows()).thenReturn(list);
@@ -103,7 +104,7 @@ public class TvShowServiceTest {
     void testTopRatedTvShows() {
         List<TmdbTvShowDTO> list = new ArrayList<>();
         TmdbVideoResultsDTO videos = new TmdbVideoResultsDTO(List.of());
-        TmdbTvShowDTO movie = new TmdbTvShowDTO(1L, "", "", LocalDate.now(), "", "", 0.0, videos);
+        TmdbTvShowDTO movie = new TmdbTvShowDTO(1L, "", "", LocalDate.now(), "", "", 0.0, videos, new TmdbImageResultsDTO(List.of()));
         list.add(movie);
 
         when(tmdbClient.topRatedTvShows()).thenReturn(list);

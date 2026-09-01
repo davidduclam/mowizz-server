@@ -1,6 +1,7 @@
 package com.github.davidduclam.movietracker.service;
 
 import com.github.davidduclam.movietracker.client.tmdb.TmdbClient;
+import com.github.davidduclam.movietracker.client.tmdb.dto.TmdbImageResultsDTO;
 import com.github.davidduclam.movietracker.client.tmdb.dto.TmdbMovieDTO;
 import com.github.davidduclam.movietracker.client.tmdb.dto.TmdbVideoDTO;
 import com.github.davidduclam.movietracker.client.tmdb.dto.TmdbVideoResultsDTO;
@@ -44,7 +45,7 @@ public class MovieServiceTest {
     @Test
     void saveMovieToDb_movieNotInDb_savesMovie() {
         TmdbVideoResultsDTO tmdbVideoResultsDTO = new TmdbVideoResultsDTO(List.of());
-        TmdbMovieDTO tmdbMovieDTO = new TmdbMovieDTO(1L,"", LocalDate.now(), "", "", "", 2.0, tmdbVideoResultsDTO);
+        TmdbMovieDTO tmdbMovieDTO = new TmdbMovieDTO(1L,"", LocalDate.now(), "", "", "", 2.0, tmdbVideoResultsDTO, new TmdbImageResultsDTO(List.of()));
 
         UserMediaRequestDTO userMedia = new UserMediaRequestDTO(1L, MediaType.MOVIE);
         when(movieRepository.findByTmdbId(1L)).thenReturn(Optional.empty());
@@ -88,7 +89,7 @@ public class MovieServiceTest {
     void testPopularMovies() {
         List<TmdbMovieDTO> list = new ArrayList<>();
         TmdbVideoResultsDTO videos = new TmdbVideoResultsDTO(List.of());
-        TmdbMovieDTO movie = new TmdbMovieDTO(1L, "", LocalDate.now(), "", "", "", 0.0, videos);
+        TmdbMovieDTO movie = new TmdbMovieDTO(1L, "", LocalDate.now(), "", "", "", 0.0, videos, new TmdbImageResultsDTO(List.of()));
         list.add(movie);
 
         when(tmdbClient.popularMovies()).thenReturn(list);
@@ -103,7 +104,7 @@ public class MovieServiceTest {
     void testTopRatedMovies() {
         List<TmdbMovieDTO> list = new ArrayList<>();
         TmdbVideoResultsDTO videos = new TmdbVideoResultsDTO(List.of());
-        TmdbMovieDTO movie = new TmdbMovieDTO(1L, "", LocalDate.now(), "", "", "", 0.0, videos);
+        TmdbMovieDTO movie = new TmdbMovieDTO(1L, "", LocalDate.now(), "", "", "", 0.0, videos, new TmdbImageResultsDTO(List.of()));
         list.add(movie);
 
         when(tmdbClient.topRatedMovies()).thenReturn(list);
@@ -118,7 +119,7 @@ public class MovieServiceTest {
     void testUpcomingMovies() {
         List<TmdbMovieDTO> list = new ArrayList<>();
         TmdbVideoResultsDTO videos = new TmdbVideoResultsDTO(List.of());
-        TmdbMovieDTO movie = new TmdbMovieDTO(1L, "", LocalDate.now(), "", "", "", 0.0, videos);
+        TmdbMovieDTO movie = new TmdbMovieDTO(1L, "", LocalDate.now(), "", "", "", 0.0, videos, new TmdbImageResultsDTO(List.of()));
         list.add(movie);
 
         when(tmdbClient.upcomingMovies()).thenReturn(list);
