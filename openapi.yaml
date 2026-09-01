@@ -565,7 +565,17 @@ components:
         trailerKey:
           type: string
           nullable: true
-          description: YouTube video ID of the first official trailer, or null if none exists
+          description: >-
+            YouTube video ID of the first official trailer. Only populated by the
+            movie detail endpoint; omitted from summary/list responses
+            (popular, top-rated, upcoming).
+        logoPath:
+          type: string
+          nullable: true
+          description: >-
+            TMDB file path of the movie's logo image. Only populated by the movie
+            detail endpoint; omitted from summary/list responses
+            (popular, top-rated, upcoming).
 
     TvShow:
       type: object
@@ -592,7 +602,17 @@ components:
         trailerKey:
           type: string
           nullable: true
-          description: YouTube video ID of the first official trailer, or null if none exists
+          description: >-
+            YouTube video ID of the first official trailer. Only populated by the
+            TV show detail endpoint; omitted from summary/list responses
+            (popular, top-rated).
+        logoPath:
+          type: string
+          nullable: true
+          description: >-
+            TMDB file path of the TV show's logo image. Only populated by the TV
+            show detail endpoint; omitted from summary/list responses
+            (popular, top-rated).
 
     SearchResult:
       oneOf:

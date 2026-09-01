@@ -1,5 +1,7 @@
 package com.github.davidduclam.movietracker.dto;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
+
 import java.time.LocalDate;
 
 public record MovieResponseDTO(
@@ -10,5 +12,6 @@ public record MovieResponseDTO(
     String posterPath,
     String backdropPath,
     Double voteAverage,
-    String trailerKey
+    @JsonInclude(JsonInclude.Include.NON_NULL) String trailerKey,
+    @JsonInclude(JsonInclude.Include.NON_NULL) String logoPath
 ) {}
