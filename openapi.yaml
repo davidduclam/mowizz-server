@@ -564,18 +564,16 @@ components:
           format: double
         trailerKey:
           type: string
-          nullable: true
           description: >-
-            YouTube video ID of the first official trailer. Only populated by the
-            movie detail endpoint; omitted from summary/list responses
-            (popular, top-rated, upcoming).
+            YouTube video ID of the first official trailer. Present only on the
+            movie detail endpoint, and only when the movie has one; always absent
+            from summary/list responses (popular, top-rated, upcoming).
         logoPath:
           type: string
-          nullable: true
           description: >-
-            TMDB file path of the movie's logo image. Only populated by the movie
-            detail endpoint; omitted from summary/list responses
-            (popular, top-rated, upcoming).
+            TMDB file path of the movie's logo image. Present only on the movie
+            detail endpoint, and only when the movie has one; always absent from
+            summary/list responses (popular, top-rated, upcoming).
 
     TvShow:
       type: object
@@ -601,18 +599,16 @@ components:
           format: double
         trailerKey:
           type: string
-          nullable: true
           description: >-
-            YouTube video ID of the first official trailer. Only populated by the
-            TV show detail endpoint; omitted from summary/list responses
-            (popular, top-rated).
+            YouTube video ID of the first official trailer. Present only on the
+            TV show detail endpoint, and only when the show has one; always absent
+            from summary/list responses (popular, top-rated).
         logoPath:
           type: string
-          nullable: true
           description: >-
-            TMDB file path of the TV show's logo image. Only populated by the TV
-            show detail endpoint; omitted from summary/list responses
-            (popular, top-rated).
+            TMDB file path of the TV show's logo image. Present only on the TV
+            show detail endpoint, and only when the show has one; always absent
+            from summary/list responses (popular, top-rated).
 
     SearchResult:
       oneOf:
