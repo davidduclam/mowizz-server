@@ -11,5 +11,6 @@ public record TmdbMovieDTO(
     String backdrop_path,
     String overview,
     Double vote_average,
-    TmdbVideoResultsDTO videos
+    TmdbVideoResultsDTO videos,
+    TmdbImageResultsDTO images
 ) {}

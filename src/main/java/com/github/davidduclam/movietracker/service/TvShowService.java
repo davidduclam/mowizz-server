@@ -80,7 +80,7 @@ public class TvShowService {
                 .map(tvShow -> new TvShowResponseDTO(
                         tvShow.getTmdbId(), tvShow.getTitle(), tvShow.getOverview(),
                         tvShow.getFirstAirDate(), tvShow.getPosterPath(),
-                        tvShow.getBackdropPath(), tvShow.getVoteAverage(), null))
+                        tvShow.getBackdropPath(), tvShow.getVoteAverage(), null, null))
                 .orElseThrow(MediaNotFoundException::new);
     }
 
@@ -140,45 +140,24 @@ public class TvShowService {
      */
     public TrailerDTO getTvShowTrailer(Long tmdbId) {
         List<TmdbVideoDTO> tmdbVideoDTOList = tmdbClient.fetchTvShowTrailers(tmdbId);
-        Optional<TrailerDTO> trailerDTO = tmdbVideoDTOList.stream().filter(f -> f.type().equals("Trailer") && f.official().equals(true)).map(this::toTrailer).findFirst();
+        Optional<TrailerDTO> trailerDTO = tmdbVideoDTOList.stream()
+                .filter(f -> f.type().equals("Trailer") && f.official().equals(true))
+                .map(TmdbResponseMapper::toTrailer)
+                .findFirst();
         return trailerDTO.orElseThrow(MediaNotFoundException::new);
-    }
-
-    /**
-     * Converts a TmdbVideoDTO object to a TrailerDTO object.
-     *
-     * @param tmdbVideoDTO the TmdbVideoDTO object containing video details
-     * @return a TrailerDTO object populated with data from the given TmdbVideoDTO
-     */
-    private TrailerDTO toTrailer(TmdbVideoDTO tmdbVideoDTO) {
-        return new TrailerDTO(
-                tmdbVideoDTO.key(),
-                tmdbVideoDTO.name(),
-                tmdbVideoDTO.site()
-        );
     }
 
     /**
      * Converts a TmdbTvShowDTO object into a TvShowResponseDTO object.
      *
-     * @param tmdbTvShowDTO the input DTO containing data from the TMDB API about a TV show
-     * @return a TvShowResponseDTO containing the mapped data, including the trailer key if available
+     * @param t the TmdbTvShowDTO object containing the data to be transformed
+     * @return a TvShowResponseDTO object containing the mapped data
      */
-    private TvShowResponseDTO toTvShowResponse(TmdbTvShowDTO tmdbTvShowDTO) {
-        String trailerKey = tmdbTvShowDTO.videos() == null ? null :
-                tmdbTvShowDTO.videos().results().stream()
-                        .filter(v -> v.type().equals("Trailer") && v.official().equals(true) && "YouTube".equals(v.site()))
-                        .map(TmdbVideoDTO::key)
-                        .findFirst()
-                        .orElse(null);
+    private TvShowResponseDTO toTvShowResponse(TmdbTvShowDTO t) {
         return new TvShowResponseDTO(
-                tmdbTvShowDTO.id(),
-                tmdbTvShowDTO.name(),
-                tmdbTvShowDTO.overview(),
-                tmdbTvShowDTO.first_air_date(),
-                tmdbTvShowDTO.poster_path(),
-                tmdbTvShowDTO.backdrop_path(),
-                tmdbTvShowDTO.vote_average(),
-                trailerKey);
+                t.id(), t.name(), t.overview(), t.first_air_date(),
+                t.poster_path(), t.backdrop_path(), t.vote_average(),
+                TmdbResponseMapper.officialTrailerKey(t.videos()),
+                TmdbResponseMapper.firstLogoPath(t.images()));
     }
 }

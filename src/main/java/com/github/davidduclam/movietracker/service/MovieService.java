@@ -11,7 +11,6 @@ import com.github.davidduclam.movietracker.model.Movie;
 import com.github.davidduclam.movietracker.repository.MovieRepository;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -77,7 +76,7 @@ public class MovieService {
                 .map(movie -> new MovieResponseDTO(
                         movie.getTmdbId(), movie.getTitle(), movie.getOverview(),
                         movie.getReleaseDate(), movie.getPosterPath(),
-                        movie.getBackdropPath(), movie.getVoteAverage(), null))
+                        movie.getBackdropPath(), movie.getVoteAverage(), null, null))
                 .orElseThrow(MediaNotFoundException::new);
     }
 
@@ -134,55 +133,32 @@ public class MovieService {
     }
 
     /**
-     * Fetches the movie trailer for the given TMDB (The Movie Database) movie ID.
+     * Retrieves the movie trailer for a given TMDb movie ID.
      *
-     * @param tmdbId the unique identifier of the movie in TMDB whose trailer is to be fetched
-     * @return A {@link TrailerDTO} object representing the movie trailer
-     * @throws MediaNotFoundException if no official trailer is found for the given movie.
+     * @param tmdbId the ID of the TMDb movie for which the trailer is being fetched
+     * @return the trailer information encapsulated in a TrailerDTO object
+     * @throws MediaNotFoundException if no official trailer is found for the given movie ID
      */
     public TrailerDTO getMovieTrailer(Long tmdbId) {
         List<TmdbVideoDTO> tmdbVideoDTOList = tmdbClient.fetchMovieTrailers(tmdbId);
-        Optional<TrailerDTO> trailerDTO = tmdbVideoDTOList.stream().filter(f -> f.type().equals("Trailer") && f.official().equals(true)).map(this::toTrailer).findFirst();
+        Optional<TrailerDTO> trailerDTO = tmdbVideoDTOList.stream()
+                .filter(f -> f.type().equals("Trailer") && f.official().equals(true))
+                .map(TmdbResponseMapper::toTrailer)
+                .findFirst();
         return trailerDTO.orElseThrow(MediaNotFoundException::new);
     }
 
     /**
-     * Converts a TmdbVideoDTO object to a TrailerDTO object.
+     * Converts a TmdbMovieDTO object to a MovieResponseDTO object.
      *
-     * @param tmdbVideoDTO the TmdbVideoDTO object containing video details
-     * @return a TrailerDTO object populated with data from the given TmdbVideoDTO
+     * @param m the TmdbMovieDTO object containing movie details.
+     * @return a MovieResponseDTO object mapped from the given TmdbMovieDTO.
      */
-    private TrailerDTO toTrailer(TmdbVideoDTO tmdbVideoDTO) {
-        return new TrailerDTO(
-                tmdbVideoDTO.key(),
-                tmdbVideoDTO.name(),
-                tmdbVideoDTO.site()
-        );
-    }
-
-    /**
-     * Converts a {@link TmdbMovieDTO} object into a {@link MovieResponseDTO} object.
-     *
-     * @param tmdbMovieDTO the {@link TmdbMovieDTO} object containing movie information
-     *                     retrieved from the TMDb API.
-     * @return a {@link MovieResponseDTO} object containing the transformed movie
-     *         information, including basic details and the trailer key if available.
-     */
-    private MovieResponseDTO toMovieResponse(TmdbMovieDTO tmdbMovieDTO) {
-        String trailerKey = tmdbMovieDTO.videos() == null ? null :
-                tmdbMovieDTO.videos().results().stream()
-                        .filter(v -> v.type().equals("Trailer") && v.official().equals(true) && "YouTube".equals(v.site()))
-                        .map(TmdbVideoDTO::key)
-                        .findFirst()
-                        .orElse(null);
+    private MovieResponseDTO toMovieResponse(TmdbMovieDTO m) {
         return new MovieResponseDTO(
-                tmdbMovieDTO.id(),
-                tmdbMovieDTO.title(),
-                tmdbMovieDTO.overview(),
-                tmdbMovieDTO.release_date(),
-                tmdbMovieDTO.poster_path(),
-                tmdbMovieDTO.backdrop_path(),
-                tmdbMovieDTO.vote_average(),
-                trailerKey);
+                m.id(), m.title(), m.overview(), m.release_date(),
+                m.poster_path(), m.backdrop_path(), m.vote_average(),
+                TmdbResponseMapper.officialTrailerKey(m.videos()),
+                TmdbResponseMapper.firstLogoPath(m.images()));
     }
 }

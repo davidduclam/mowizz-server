@@ -10,5 +10,6 @@ public record TmdbTvShowDTO(
         String poster_path,
         String backdrop_path,
         Double vote_average,
-        TmdbVideoResultsDTO videos
+        TmdbVideoResultsDTO videos,
+        TmdbImageResultsDTO images
 ) {}
